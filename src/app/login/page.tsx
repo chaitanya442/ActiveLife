@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/logo";
-import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -89,7 +88,7 @@ export default function LoginPage() {
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
         // Fallback to redirect method if popup is blocked or closed
-        await getAuth().signInWithRedirect(googleProvider);
+        getAuth().signInWithRedirect(googleProvider);
       } else {
         console.error("Authentication error:", error);
         toast({
@@ -132,129 +131,91 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   };
-  
-  const textAnimation = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
-    transition: { duration: 0.3 }
-  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="w-full max-w-lg mx-auto overflow-hidden">
-          <CardHeader className="text-center px-8 pt-8">
-            <Logo className="justify-center mb-4"/>
-              <div className="min-h-[80px]">
-                <AnimatePresence mode="wait">
-                    <motion.div key={isSignUp ? 'signup-title' : 'login-title'} {...textAnimation}>
-                        <CardTitle className="text-3xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
-                        <CardDescription className="text-base pt-2">
-                            {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
-                        </CardDescription>
-                    </motion.div>
-                </AnimatePresence>
-              </div>
-          </CardHeader>
-          <CardContent className="px-8 pb-8">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="name@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                          key={isSignUp ? 'signup-btn' : 'login-btn'}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="flex items-center justify-center"
-                      >
-                          {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
-                      </motion.span>
-                    </AnimatePresence>
-                </Button>
-              </form>
-            </Form>
-            
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
+      <Card className="w-full max-w-lg mx-auto overflow-hidden">
+        <CardHeader className="text-center px-8 pt-8">
+          <Logo className="justify-center mb-4"/>
+            <div className="min-h-[80px]">
+              <CardTitle className="text-3xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
+              <CardDescription className="text-base pt-2">
+                  {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
+              </CardDescription>
             </div>
-            
-            <Button onClick={handleGoogleSignIn} className="w-full" variant="outline">
-              <GoogleIcon />
-              Sign in with Google
-            </Button>
+        </CardHeader>
+        <CardContent className="px-8 pb-8">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input placeholder="name@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <span className="flex items-center justify-center">
+                    {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
+                </span>
+              </Button>
+            </form>
+          </Form>
+          
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+          
+          <Button onClick={handleGoogleSignIn} className="w-full" variant="outline">
+            <GoogleIcon />
+            Sign in with Google
+          </Button>
 
-            <p className="mt-4 px-8 text-center text-sm text-muted-foreground">
-              <AnimatePresence mode="wait">
-                  <motion.span
-                      key={isSignUp ? 'signup-text' : 'login-text'}
-                      {...textAnimation}
-                  >
-                      {isSignUp ? "Already have an account?" : "Don't have an account?"}
-                  </motion.span>
-              </AnimatePresence>
-              {" "}
-              <button
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  form.reset();
-                }}
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                  <AnimatePresence mode="wait">
-                      <motion.span
-                          key={isSignUp ? 'signin-link' : 'signup-link'}
-                          {...textAnimation}
-                          className="inline-block"
-                      >
-                          {isSignUp ? "Sign In" : "Sign Up"}
-                      </motion.span>
-                  </AnimatePresence>
-              </button>
-            </p>
-          </CardContent>
-        </Card>
-      </motion.div>
+          <p className="mt-4 px-8 text-center text-sm text-muted-foreground">
+            <span>
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}
+            </span>
+            {" "}
+            <button
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                form.reset();
+              }}
+              className="underline underline-offset-4 hover:text-primary"
+            >
+                <span className="inline-block">
+                    {isSignUp ? "Sign In" : "Sign Up"}
+                </span>
+            </button>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
-
-    
+}
