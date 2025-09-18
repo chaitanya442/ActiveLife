@@ -116,16 +116,17 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
         if (resultData.highlights) {
           setHighlights(resultData.highlights);
         }
-        if (resultData.age) {
+        // Only set value if it's a valid number and not 0
+        if (resultData.age && resultData.age > 0) {
           step2Form.setValue('age', resultData.age);
         }
         if (resultData.sex) {
           step2Form.setValue('sex', resultData.sex);
         }
-        if (resultData.height) {
+        if (resultData.height && resultData.height > 0) {
           step2Form.setValue('height', resultData.height);
         }
-        if (resultData.weight) {
+        if (resultData.weight && resultData.weight > 0) {
           step2Form.setValue('weight', resultData.weight);
         }
       };
@@ -421,5 +422,3 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
     </Card>
   );
 }
-
-    
