@@ -2,22 +2,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, getRedirectResult } from "firebase/auth";
 import { googleProvider } from "@/lib/firebase";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import Logo from "@/components/logo";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { placeholderImages } from "@/lib/placeholder-images";
+import Logo from "@/components/logo";
 
 const GoogleIcon = () => (
   <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -39,13 +40,11 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [isSignUp, setIsSignUp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const loginImage = placeholderImages.find(p => p.id === 'login-background');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: { email: "", password: "" },
   });
 
   useEffect(() => {
@@ -59,10 +58,7 @@ export default function LoginPage() {
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
-          toast({
-            title: "Success!",
-            description: "You've been signed in.",
-          });
+          toast({ title: "Success!", description: "You've been signed in." });
           router.push("/dashboard");
         }
       })
@@ -76,15 +72,11 @@ export default function LoginPage() {
       });
   }, [router, toast]);
 
-
   const handleGoogleSignIn = async () => {
     const auth = getAuth();
     try {
       await signInWithPopup(auth, googleProvider);
-      toast({
-        title: "Success!",
-        description: "You've been signed in.",
-      });
+      toast({ title: "Success!", description: "You've been signed in." });
       router.push("/dashboard");
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
@@ -108,16 +100,10 @@ export default function LoginPage() {
     try {
       if (isSignUp) {
         await createUserWithEmailAndPassword(auth, email, password);
-        toast({
-          title: "Account Created!",
-          description: "You've been successfully signed up.",
-        });
+        toast({ title: "Account Created!", description: "You've been successfully signed up." });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        toast({
-          title: "Signed In!",
-          description: "Welcome back.",
-        });
+        toast({ title: "Signed In!", description: "Welcome back." });
       }
       router.push("/dashboard");
     } catch (error: any) {
@@ -134,36 +120,55 @@ export default function LoginPage() {
 
   const textVariants = {
     initial: { opacity: 0, y: -20 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, y: 20, transition: { duration: 0.3 } },
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-secondary">
-      <Card className="w-full max-w-lg mx-auto overflow-hidden">
-        <CardHeader className="text-center px-8 pt-8">
-          <Logo className="justify-center mb-4"/>
-            <div className="min-h-[80px]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={isSignUp ? "signup" : "login"}
-                  variants={textVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={{ duration: 0.3 }}
-                >
-                  <CardTitle className="text-3xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
-                  <CardDescription className="text-base pt-2">
-                      {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
-                  </CardDescription>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-        </CardHeader>
-        <CardContent className="px-8 pb-8">
+    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
+      <div className="relative hidden h-full flex-col bg-muted text-white lg:flex">
+        {loginImage && (
+            <Image
+                src={loginImage.imageUrl}
+                alt="Login background"
+                layout="fill"
+                objectFit="cover"
+                data-ai-hint={loginImage.imageHint}
+            />
+        )}
+        <div className="absolute inset-0 bg-zinc-900/60" />
+        <div className="relative z-20 flex items-center p-8">
+            <Logo className="text-white" />
+        </div>
+        <div className="relative z-20 mt-auto p-8">
+          <div className="space-y-2 text-lg">
+            <p className="font-semibold">"The only bad workout is the one that didn't happen."</p>
+            <footer className="text-base font-medium text-zinc-300">- Anonymous</footer>
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center justify-center py-12">
+        <div className="mx-auto grid w-[350px] gap-6">
+          <div className="grid gap-2 text-center min-h-[80px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isSignUp ? "signup" : "login"}
+                variants={textVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                <h1 className="text-3xl font-bold font-headline">
+                  {isSignUp ? "Create an account" : "Welcome back"}
+                </h1>
+                <p className="text-balance text-muted-foreground mt-2">
+                  {isSignUp ? "Enter your details to get started" : "Enter your credentials to access your account"}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
               <FormField
                 control={form.control}
                 name="email"
@@ -182,7 +187,17 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <div className="flex items-center">
+                        <FormLabel>Password</FormLabel>
+                        {!isSignUp && (
+                            <Link
+                                href="#"
+                                className="ml-auto inline-block text-sm underline"
+                            >
+                                Forgot your password?
+                            </Link>
+                        )}
+                    </div>
                     <FormControl>
                       <Input type="password" placeholder="••••••••" {...field} />
                     </FormControl>
@@ -191,48 +206,25 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                <span className="flex items-center justify-center">
-                    {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
-                </span>
+                {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
+              </Button>
+              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
+                <GoogleIcon />
+                 {isSignUp ? "Sign up with Google" : "Login with Google"}
               </Button>
             </form>
           </Form>
-          
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          
-          <Button onClick={handleGoogleSignIn} className="w-full" variant="outline">
-            <GoogleIcon />
-            Sign in with Google
-          </Button>
-
-          <p className="mt-4 px-8 text-center text-sm text-muted-foreground">
-            <span>
-                {isSignUp ? "Already have an account?" : "Don't have an account?"}
-            </span>
-            {" "}
-            <button
-              onClick={() => {
+          <div className="mt-4 text-center text-sm">
+            {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+            <button onClick={() => {
                 setIsSignUp(!isSignUp);
                 form.reset();
-              }}
-              className="underline underline-offset-4 hover:text-primary"
-            >
-                <span className="inline-block">
-                    {isSignUp ? "Sign In" : "Sign Up"}
-                </span>
+                }} className="underline">
+              {isSignUp ? "Sign in" : "Sign up"}
             </button>
-          </p>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

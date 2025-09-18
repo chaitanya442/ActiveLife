@@ -11,6 +11,12 @@
       "description": "A welcoming image for the dashboard, perhaps a serene fitness environment.",
       "imageUrl": "https://picsum.photos/seed/dashboard-welcome/800/400",
       "imageHint": "fitness gym"
+    },
+    {
+      "id": "login-background",
+      "description": "An inspiring fitness image for the login page background.",
+      "imageUrl": "https://picsum.photos/seed/login-bg/1080/1920",
+      "imageHint": "fitness motivation"
     }
   ]
 }
