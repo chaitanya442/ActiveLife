@@ -118,17 +118,19 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="w-full max-w-sm mx-auto overflow-hidden">
+        <Card className="w-full max-w-sm mx-auto overflow-hidden h-[600px]">
           <CardHeader className="text-center">
             <Logo className="justify-center mb-4"/>
-              <AnimatePresence mode="wait">
-                  <motion.div key={isSignUp ? 'signup-title' : 'login-title'} {...textAnimation}>
-                      <CardTitle className="text-2xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
-                      <CardDescription>
-                          {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
-                      </CardDescription>
-                  </motion.div>
-              </AnimatePresence>
+              <div className="h-20">
+                <AnimatePresence mode="wait">
+                    <motion.div key={isSignUp ? 'signup-title' : 'login-title'} {...textAnimation}>
+                        <CardTitle className="text-2xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
+                        <CardDescription>
+                            {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
+                        </CardDescription>
+                    </motion.div>
+                </AnimatePresence>
+              </div>
           </CardHeader>
           <CardContent>
             <Form {...form}>
