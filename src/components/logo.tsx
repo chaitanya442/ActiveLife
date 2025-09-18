@@ -7,11 +7,11 @@ export default function Logo({ className }: { className?: string }) {
     <Link
       href="/"
       className={cn(
-        "flex items-center gap-2 text-xl font-bold font-headline text-foreground",
+        "flex items-center gap-2 text-xl font-bold font-headline text-primary",
         className
       )}
     >
-      <Dumbbell className="h-6 w-6 text-primary" />
+      <Dumbbell className="h-6 w-6" />
       <span>ActiveLife</span>
     </Link>
   );
