@@ -1,4 +1,5 @@
 
+
 export interface OnboardingData {
   planName?: string;
   age: number;
@@ -29,4 +30,12 @@ export interface StoredPlan {
   createdAt: string;
   onboarding: OnboardingData;
   plan: ExercisePlan;
+}
+
+export interface ExtractHighlightsOutput {
+  highlights: string;
+  age?: number;
+  sex?: 'male' | 'female' | 'other';
+  height?: number;
+  weight?: number;
 }

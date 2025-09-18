@@ -36,7 +36,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateNewPlan, getHighlightsFromPdf } from '@/app/actions/user-data';
 import { Loader2, Upload, FileText, Lightbulb } from 'lucide-react';
-import { ExercisePlan, OnboardingData, StoredPlan } from '@/lib/types';
+import { ExercisePlan, OnboardingData, StoredPlan, ExtractHighlightsOutput } from '@/lib/types';
 import { Label } from './ui/label';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
@@ -62,6 +62,25 @@ const step2Schema = z.object({
 
 type Step1Data = z.infer<typeof step1Schema>;
 type Step2Data = z.infer<typeof step2Schema>;
+
+// Function to create a simple hash from a string
+const simpleHash = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = (hash << 5) - hash + char;
+        hash |= 0; // Convert to 32bit integer
+    }
+    return 'pdf-' + hash.toString();
+};
+
+const processPdfResult = (resultData: ExtractHighlightsOutput, form: any) => {
+    if (resultData.highlights) setHighlights(resultData.highlights);
+    if (resultData.age) form.setValue('age', resultData.age);
+    if (resultData.sex) form.setValue('sex', resultData.sex);
+    if (resultData.height) form.setValue('height', resultData.height);
+    if (resultData.weight) form.setValue('weight', resultData.weight);
+};
 
 export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
@@ -105,16 +124,22 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
       reader.onloadend = async () => {
         const dataUri = reader.result as string;
         step2Form.setValue('medicalPdf', dataUri);
+        
+        const pdfHash = simpleHash(dataUri);
+        const cachedResult = sessionStorage.getItem(pdfHash);
+
+        if (cachedResult) {
+            console.log("Using cached PDF analysis result.");
+            processPdfResult(JSON.parse(cachedResult), step2Form);
+            setIsHighlighting(false);
+            return;
+        }
 
         try {
           const result = await getHighlightsFromPdf({ medicalPdf: dataUri });
           if (result.success && result.data) {
-            setHighlights(result.data.highlights);
-            // Auto-fill form fields
-            if (result.data.age) step2Form.setValue('age', result.data.age);
-            if (result.data.sex) step2Form.setValue('sex', result.data.sex);
-            if (result.data.height) step2Form.setValue('height', result.data.height);
-            if (result.data.weight) step2Form.setValue('weight', result.data.weight);
+             processPdfResult(result.data, step2Form);
+             sessionStorage.setItem(pdfHash, JSON.stringify(result.data));
           } else {
             throw new Error(result.error || "Failed to get highlights.");
           }
@@ -122,7 +147,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
           toast({
             variant: "destructive",
             title: "Analysis Failed",
-            description: error instanceof Error ? error.message : "Could not analyze the PDF."
+            description: error instanceof Error ? error.message : "Could not analyze the PDF. You may have hit a rate limit. Please try again in a moment."
           });
         } finally {
           setIsHighlighting(false);
