@@ -115,8 +115,8 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
             }
             if (resultData.age) step2Form.setValue('age', resultData.age);
             if (resultData.sex) step2Form.setValue('sex', resultData.sex);
-            if (resultData.height) step2Form.setValue('height', resultData.height);
-            if (resultData.weight) step2Form.setValue('weight', resultData.weight);
+            if (resultData.height && resultData.height > 0) step2Form.setValue('height', resultData.height);
+            if (resultData.weight && resultData.weight > 0) step2Form.setValue('weight', resultData.weight);
         };
 
         try {
