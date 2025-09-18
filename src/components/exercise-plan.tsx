@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { getAdjustedPlan } from "@/app/actions/user-data";
-import { Loader2, ShieldAlert, Sparkles, Wand2, Apple, Dumbbell } from "lucide-react";
+import { Loader2, ShieldAlert, Wand2, Apple, Dumbbell } from "lucide-react";
 
 interface ExercisePlanProps {
   initialPlan: ExercisePlanType;
@@ -33,12 +33,13 @@ const parseSection = (planText: string | undefined) => {
   const titles = planText.match(/Week \d+:|Warm-up:|Cool-down:|Monday:|Tuesday:|Wednesday:|Thursday:|Friday:|Saturday:|Sunday:|Breakfast:|Lunch:|Dinner:|Snacks:/gi) || [];
 
   if (titles.length === 0 && sections.length > 0) {
+    // If no specific titles are found, treat the whole text as one section.
     return [{
       title: "General",
       content: sections[0].trim().split('\n').map(line => line.trim()).filter(Boolean)
     }];
   }
-
+  
   return titles.map((title, index) => ({
     title: title.replace(":", "").trim(),
     content: sections[index]
@@ -72,6 +73,7 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
         const result = await getAdjustedPlan({
           ...values,
           workoutPlan: plan.exercisePlan,
+          dietPlan: plan.dietPlan,
           performanceData: "User is reporting feedback.",
           fitnessGoals,
         });
@@ -79,7 +81,7 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
         if (result.success && result.data) {
           toast({
             title: "Plan Adjusted!",
-            description: "Your workout plan has been updated based on your feedback.",
+            description: "Your workout and diet plan has been updated based on your feedback.",
           });
           setPlan(result.data);
           form.reset();
@@ -189,7 +191,7 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
                     <FormLabel>Your Feedback</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="e.g., 'The running sessions are too long for me right now. I'd prefer shorter, more intense workouts.'"
+                        placeholder="e.g., 'The running sessions are too long, and I don't like broccoli. Can you suggest an alternative?'"
                         {...field}
                       />
                     </FormControl>

@@ -29,6 +29,7 @@ const PlanCreationSchema = z.object({
 
 const AdjustmentSchema = z.object({
   workoutPlan: z.string(),
+  dietPlan: z.string(),
   userFeedback: z.string().min(10, "Please provide more detailed feedback."),
   performanceData: z.string(),
   fitnessGoals: z.string(),
@@ -54,7 +55,7 @@ export async function getAdjustedPlan(data: AdjustmentData) {
       success: true,
       data: {
         exercisePlan: result.adjustedWorkoutPlan,
-        dietPlan: "", // Diet plan is not adjusted in this flow yet
+        dietPlan: result.adjustedDietPlan,
         safetyAdvice: result.explanation,
       },
     };
