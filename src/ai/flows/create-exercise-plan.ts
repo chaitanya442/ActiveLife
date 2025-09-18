@@ -29,10 +29,26 @@ const CreateExercisePlanInputSchema = z.object({
 });
 export type CreateExercisePlanInput = z.infer<typeof CreateExercisePlanInputSchema>;
 
-// Define the output schema for the createExercisePlan function
+// Define the structured output for a single day's exercise
+const DailyExerciseSchema = z.object({
+  day: z.string().describe('Day of the week (e.g., Monday, Tuesday).'),
+  focus: z.string().describe('The main focus for the day (e.g., Chest & Triceps, Legs, Rest).'),
+  exercises: z.array(z.object({
+    name: z.string().describe('Name of the exercise.'),
+    sets: z.string().describe('Number of sets (e.g., 3, 4).'),
+    reps: z.string().describe('Number of repetitions per set (e.g., 8-12, 15).'),
+  })).describe('A list of exercises for the day.'),
+});
+
+// Define the structured output schema for the entire plan
 const CreateExercisePlanOutputSchema = z.object({
-  exercisePlan: z.string().describe("A detailed, week-by-week and day-by-day exercise plan tailored to the user's data and goals. Include warm-ups and cool-downs."),
-  dietPlan: z.string().describe("A comprehensive, week-by-week and day-by-day diet plan that complements the exercise plan, including meal suggestions and nutritional advice."),
+  exercisePlan: z.array(DailyExerciseSchema).describe("A detailed, day-by-day exercise plan for one week, tailored to the user's data and goals. Ensure a full 7-day schedule, including rest days."),
+  dietPlan: z.string().describe("A general overview of the diet plan, including meal suggestions and nutritional advice."),
+  macros: z.object({
+    carbs: z.number().describe("Percentage of daily calories from carbohydrates."),
+    protein: z.number().describe("Percentage of daily calories from protein."),
+    fat: z.number().describe("Percentage of daily calories from fat."),
+  }).describe("The recommended macronutrient breakdown as percentages of total daily calories."),
   safetyAdvice: z.string().describe("A brief and small summary (a few lines) of the most important safety advice, contraindications, and recommendations based on the user's data."),
 });
 export type CreateExercisePlanOutput = z.infer<typeof CreateExercisePlanOutputSchema>;
@@ -66,9 +82,9 @@ const createPlanPrompt = ai.definePrompt({
   Instructions:
   1.  **Risk Assessment**: First, analyze all provided data, including the user's medical history, age, other data, and the content of the attached medical document if provided.
   2.  **Generate Safety Advice**: Formulate a **brief and small summary (a few lines)** of the most critical safety advice and warnings based on a comprehensive review of all information. This is the most important step. If the user has significant health risks, the safety advice should be very prominent and clear but concise.
-  3.  **Create Exercise Plan**: Based on the user's goals and physical data, create a detailed, week-by-week and day-by-day exercise plan. The plan should be structured, easy to follow, and include specific exercises, sets, reps, and rest periods. Include a warm-up and cool-down routine for each workout.
-  4.  **Create Diet Plan**: Create a detailed, week-by-week and day-by-day diet plan that aligns with the user's fitness goals and complements the exercise plan. Provide nutritional advice and example meal suggestions for breakfast, lunch, and dinner.
-  5.  **Return Output**: Respond with the generated exercise plan, diet plan, and the crucial safety advice in the specified JSON format.
+  3.  **Create Structured Exercise Plan**: Based on the user's goals and physical data, create a structured, day-by-day exercise plan for a full 7-day week. For each day, provide the focus (e.g., 'Upper Body', 'Cardio', 'Rest'), and a list of specific exercises with sets and reps. Format this as the 'exercisePlan' array in the output.
+  4.  **Create Diet Plan & Macros**: Create a general diet plan description with meal suggestions and nutritional advice. Also, provide a recommended daily macronutrient breakdown (carbs, protein, fat) as percentages. Ensure the percentages add up to 100.
+  5.  **Return Output**: Respond with the generated structured exercise plan, the diet plan text, the macronutrient breakdown, and the crucial safety advice in the specified JSON format.
   `,
 });
 

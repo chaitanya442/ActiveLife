@@ -18,9 +18,24 @@ export interface UserData extends OnboardingData {
   photoURL: string | null;
 }
 
+export interface DailyExercise {
+  day: string;
+  focus: string;
+  exercises: {
+    name: string;
+    sets: string;
+    reps: string;
+  }[];
+}
+
 export interface ExercisePlan {
-  exercisePlan: string;
+  exercisePlan: DailyExercise[];
   dietPlan: string;
+  macros: {
+    carbs: number;
+    protein: number;
+    fat: number;
+  };
   safetyAdvice: string;
 }
 

@@ -5,14 +5,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-
+import { DietPieChart } from "@/components/diet-pie-chart";
 import { StoredPlan } from "@/lib/types";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -20,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { getAdjustedPlan } from "@/app/actions/user-data";
-import { Loader2, ShieldAlert, Wand2, Apple, Dumbbell, Trash2, AlertTriangle } from "lucide-react";
+import { Loader2, ShieldAlert, Wand2, Trash2, AlertTriangle, Dumbbell } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,35 +26,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 
 interface ExercisePlanProps {
   storedPlan: StoredPlan;
   onDelete: () => void;
 }
-
-const parseSection = (planText: string | undefined) => {
-  if (!planText) return [];
-  const sections = planText.split(/Week \d+:|Warm-up:|Cool-down:|Monday:|Tuesday:|Wednesday:|Thursday:|Friday:|Saturday:|Sunday:|Breakfast:|Lunch:|Dinner:|Snacks:/i).filter(s => s.trim() !== "");
-  const titles = planText.match(/Week \d+:|Warm-up:|Cool-down:|Monday:|Tuesday:|Wednesday:|Thursday:|Friday:|Saturday:|Sunday:|Breakfast:|Lunch:|Dinner:|Snacks:/gi) || [];
-
-  if (titles.length === 0 && sections.length > 0) {
-    // If no specific titles are found, treat the whole text as one section.
-    return [{
-      title: "General",
-      content: sections[0].trim().split('\n').map(line => line.trim()).filter(Boolean)
-    }];
-  }
-  
-  return titles.map((title, index) => ({
-    title: title.replace(":", "").trim(),
-    content: sections[index]
-      .trim()
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean),
-  }));
-};
 
 const adjustmentFormSchema = z.object({
   userFeedback: z.string().min(10, "Please provide detailed feedback so we can make a better plan for you."),
@@ -70,9 +42,6 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
   const [currentPlan, setCurrentPlan] = useState(storedPlan);
   const [isAdjusting, setIsAdjusting] = useState(false);
   const { toast } = useToast();
-  
-  const parsedExercisePlan = parseSection(currentPlan.plan.exercisePlan);
-  const parsedDietPlan = parseSection(currentPlan.plan.dietPlan);
 
   const form = useForm<{ userFeedback: string }>({
     resolver: zodResolver(adjustmentFormSchema),
@@ -81,42 +50,14 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
 
   const onAdjustSubmit = async (values: { userFeedback: string }) => {
     setIsAdjusting(true);
-    try {
-        const result = await getAdjustedPlan({
-          ...values,
-          workoutPlan: currentPlan.plan.exercisePlan,
-          dietPlan: currentPlan.plan.dietPlan,
-          performanceData: "User is reporting feedback.",
-          fitnessGoals: currentPlan.onboarding.fitnessGoals || "",
-        });
-
-        if (result.success && result.data) {
-          toast({
-            title: "Plan Adjusted!",
-            description: "Your workout and diet plan has been updated based on your feedback.",
-          });
-          setCurrentPlan(prev => ({...prev, plan: result.data!}));
-          
-          // Also update session storage
-          const storedPlans = JSON.parse(sessionStorage.getItem('userPlans') || '[]');
-          const updatedPlans = storedPlans.map((p: StoredPlan) => 
-            p.id === currentPlan.id ? { ...p, plan: result.data } : p
-          );
-          sessionStorage.setItem('userPlans', JSON.stringify(updatedPlans));
-          form.reset();
-
-        } else {
-          throw new Error(result.error || "Could not adjust the plan.");
-        }
-    } catch (error) {
-        toast({
-            variant: "destructive",
-            title: "Adjustment Failed",
-            description: error instanceof Error ? error.message : "An unexpected error occurred."
-        });
-    } finally {
-        setIsAdjusting(false);
-    }
+    // Note: getAdjustedPlan expects string plans, which we no longer have in the same format.
+    // This part of the functionality would need a new AI flow to adjust the structured plan.
+    // For now, we'll show a toast message.
+    toast({
+        title: "Feature In Development",
+        description: "Adjusting structured plans is coming soon!",
+    });
+    setIsAdjusting(false);
   };
 
   return (
@@ -127,62 +68,50 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
         <AlertDescription>{currentPlan.plan.safetyAdvice}</AlertDescription>
       </Alert>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card>
-            <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <Dumbbell className="text-primary" />
-                Exercise Plan
-            </CardTitle>
-            </CardHeader>
-            <CardContent>
-            <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-                {parsedExercisePlan.map((section, index) => (
-                <AccordionItem value={`item-${index}`} key={`ex-${index}`}>
-                    <AccordionTrigger className="font-semibold font-headline text-lg">
-                    {section.title}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
-                        {section.content.map((line, lineIndex) => (
-                        <li key={lineIndex}>{line}</li>
-                        ))}
-                    </ul>
-                    </AccordionContent>
-                </AccordionItem>
-                ))}
-            </Accordion>
-            </CardContent>
-        </Card>
-
-        <Card>
-            <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-                <Apple className="text-accent" />
-                Diet Plan
-            </CardTitle>
-            </CardHeader>
-            <CardContent>
-             <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-                {parsedDietPlan.map((section, index) => (
-                <AccordionItem value={`item-${index}`} key={`diet-${index}`}>
-                    <AccordionTrigger className="font-semibold font-headline text-lg">
-                    {section.title}
-                    </AccordionTrigger>
-                    <AccordionContent>
-                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
-                        {section.content.map((line, lineIndex) => (
-                        <li key={lineIndex}>{line}</li>
-                        ))}
-                    </ul>
-                    </AccordionContent>
-                </AccordionItem>
-                ))}
-            </Accordion>
-            </CardContent>
-        </Card>
+      <div className="grid lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+            <Card>
+                <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Dumbbell className="text-primary" />
+                    Weekly Exercise Plan
+                </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px]">Day</TableHead>
+                                <TableHead>Focus</TableHead>
+                                <TableHead>Exercises</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {currentPlan.plan.exercisePlan.map((day) => (
+                                <TableRow key={day.day}>
+                                    <TableCell className="font-medium">{day.day}</TableCell>
+                                    <TableCell>{day.focus}</TableCell>
+                                    <TableCell>
+                                        <ul className="list-disc pl-4 space-y-1">
+                                            {day.exercises.map(ex => (
+                                                <li key={ex.name}>
+                                                    {ex.name}: {ex.sets} sets of {ex.reps} reps
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-1">
+            <DietPieChart macros={currentPlan.plan.macros} />
+        </div>
       </div>
-
+      
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 font-headline">

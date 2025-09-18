@@ -82,6 +82,13 @@ export async function generateNewPlan(data: PlanCreationData) {
         };
     } catch (error) {
         console.error("Error generating new plan:", error);
+        // This is a temporary workaround for a known issue in the AI model.
+        if (error instanceof Error && error.message.includes("The model is not configured to output medias of type")) {
+             return {
+                success: false,
+                error: "The AI model could not generate the plan in the required format. This can sometimes happen with complex requests. Please try modifying your goals or try again in a moment.",
+            };
+        }
         const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
         return {
             success: false,
