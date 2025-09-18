@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { getAdjustedPlan } from "@/app/actions/user-data";
-import { Loader2, ShieldAlert, Wand2, Trash2, AlertTriangle, Dumbbell } from "lucide-react";
+import { Loader2, ShieldAlert, Wand2, Trash2, AlertTriangle, Dumbbell, Info } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,9 +50,8 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
 
   const onAdjustSubmit = async (values: { userFeedback: string }) => {
     setIsAdjusting(true);
-    // Note: getAdjustedPlan expects string plans, which we no longer have in the same format.
-    // This part of the functionality would need a new AI flow to adjust the structured plan.
-    // For now, we'll show a toast message.
+    // This functionality is temporarily disabled until the AI flow is updated
+    // for structured plan adjustments.
     toast({
         title: "Feature In Development",
         description: "Adjusting structured plans is coming soon!",
@@ -112,49 +111,13 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
         </div>
       </div>
       
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline">
-            <Wand2 className="text-primary" />
-            Adjust Your Plan
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Is the plan too hard, too easy, or not fitting your schedule? Let our AI know.
-          </p>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onAdjustSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="userFeedback"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Your Feedback</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="e.g., 'The running sessions are too long, and I don't like broccoli. Can you suggest an alternative?'"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={isAdjusting}>
-                {isAdjusting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adjusting...
-                  </>
-                ) : (
-                  "Adjust Plan with AI"
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+      <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>Adjust Plan Feature Update</AlertTitle>
+          <AlertDescription>
+            The ability to adjust your plan with AI is temporarily disabled. We're working on an improved version that handles your structured plan data correctly. Thank you for your patience!
+          </AlertDescription>
+      </Alert>
 
       <Card className="border-destructive">
           <CardHeader>
