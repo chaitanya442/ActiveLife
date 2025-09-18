@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface PlanData {
-  exercisePlan: ExercisePlan;
+  exercisePlan: string;
+  safetyAdvice: string;
   riskAssessment: RiskAssessment;
 }
 
@@ -33,7 +34,6 @@ export default function PlanPage() {
         const parsedPlan = JSON.parse(storedPlan);
         const parsedOnboarding = JSON.parse(storedOnboardingData);
 
-        // A simple check to see if the data looks right
         if (parsedPlan.exercisePlan && parsedPlan.riskAssessment) {
           setPlanData(parsedPlan);
           setOnboardingData(parsedOnboarding);
@@ -77,10 +77,15 @@ export default function PlanPage() {
     );
   }
 
+  const fullPlan: ExercisePlan = {
+      exercisePlan: planData.exercisePlan,
+      safetyAdvice: planData.safetyAdvice
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       <ExercisePlanComponent 
-        initialPlan={planData.exercisePlan} 
+        initialPlan={fullPlan} 
         fitnessGoals={onboardingData.fitnessGoals}
       />
     </div>

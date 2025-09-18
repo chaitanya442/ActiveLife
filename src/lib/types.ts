@@ -1,9 +1,13 @@
-export interface UserData {
+
+export interface OnboardingData {
   age: number;
   sex: "male" | "female" | "other";
   height: number;
   weight: number;
-  medicalHistory: string;
+  medicalHistory?: string;
+}
+
+export interface UserData extends OnboardingData {
   fitnessGoals: string;
 }
 

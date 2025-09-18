@@ -43,8 +43,7 @@ const formSchema = z.object({
   medicalHistory: z.string().optional(),
 });
 
-export type OnboardingStep1Data = z.infer<typeof formSchema>;
-
+type OnboardingStep1Data = z.infer<typeof formSchema>;
 
 export default function OnboardingStartPage() {
   const router = useRouter();
@@ -77,6 +76,9 @@ export default function OnboardingStartPage() {
           userData: values,
           riskAssessment: result.data.riskAssessment,
         };
+        // Store user data right away for other parts of the app
+        sessionStorage.setItem('onboardingData', JSON.stringify(values));
+        // Store progress for the next step
         sessionStorage.setItem(
           'onboardingProgress',
           JSON.stringify(onboardingProgress)

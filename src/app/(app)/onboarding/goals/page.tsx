@@ -23,7 +23,7 @@ import { generatePlan } from '@/app/actions/user-data';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RiskAssessment } from '@/lib/types';
-import type { OnboardingStep1Data } from '@/app/(app)/onboarding/start/page';
+import type { OnboardingData } from '@/lib/types';
 
 const formSchema = z.object({
   fitnessGoals: z.string().min(10, "Please describe your fitness goals in at least 10 characters."),
@@ -32,7 +32,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface OnboardingProgress {
-  userData: OnboardingStep1Data;
+  userData: OnboardingData;
   riskAssessment: RiskAssessment;
 }
 
@@ -94,12 +94,17 @@ export default function OnboardingGoalsPage() {
         
         const finalData = {
             exercisePlan: result.data.exercisePlan,
+            safetyAdvice: result.data.safetyAdvice,
             riskAssessment: onboardingProgress.riskAssessment
         }
+        
+        const combinedData = {
+          ...onboardingProgress.userData,
+          fitnessGoals: values.fitnessGoals,
+        };
 
         sessionStorage.setItem('generatedPlan', JSON.stringify(finalData));
-        // Also save the combined onboarding data for the profile/dashboard page
-        sessionStorage.setItem('onboardingData', JSON.stringify({...onboardingProgress.userData, fitnessGoals: values.fitnessGoals}));
+        sessionStorage.setItem('onboardingData', JSON.stringify(combinedData));
 
         // Clean up progress
         sessionStorage.removeItem('onboardingProgress');

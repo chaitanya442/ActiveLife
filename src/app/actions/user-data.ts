@@ -4,10 +4,12 @@
 import {
   riskStratification,
   RiskStratificationInput,
+  RiskStratificationOutput,
 } from "@/ai/flows/risk-stratification";
 import {
   generatePersonalizedExercisePlan,
   PersonalizedExercisePlanInput,
+  PersonalizedExercisePlanOutput,
 } from "@/ai/flows/personalized-exercise-plan";
 import {
   adjustWorkoutPlan,
@@ -17,7 +19,7 @@ import {
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
-const OnboardingStep1Schema = z.object({
+const OnboardingDataSchema = z.object({
   age: z.coerce.number().min(18, "You must be at least 18 years old."),
   sex: z.enum(["male", "female", "other"]),
   height: z.coerce.number().min(1, "Height is required."),
@@ -25,17 +27,18 @@ const OnboardingStep1Schema = z.object({
   medicalHistory: z.string().optional(),
 });
 
-type OnboardingStep1Data = z.infer<typeof OnboardingStep1Schema>;
+type OnboardingData = z.infer<typeof OnboardingDataSchema>;
 
-export async function performRiskAssessment(data: OnboardingStep1Data) {
+export async function performRiskAssessment(data: OnboardingData): Promise<{
+  success: boolean;
+  data?: { riskAssessment: RiskStratificationOutput };
+  error?: string;
+}> {
   try {
-    const validatedData = OnboardingStep1Schema.parse(data);
+    const validatedData = OnboardingDataSchema.parse(data);
 
     const riskInput: RiskStratificationInput = {
-      age: validatedData.age,
-      sex: validatedData.sex,
-      height: validatedData.height,
-      weight: validatedData.weight,
+      ...validatedData,
       medicalHistory: validatedData.medicalHistory || "No medical history provided.",
     };
 
@@ -57,31 +60,24 @@ export async function performRiskAssessment(data: OnboardingStep1Data) {
   }
 }
 
-
-const PlanGenerationSchema = z.object({
-  age: z.coerce.number(),
-  sex: z.enum(["male", "female", "other"]),
-  height: z.coerce.number(),
-  weight: z.coerce.number(),
-  medicalHistory: z.string().optional(),
+const PlanGenerationSchema = OnboardingDataSchema.extend({
   fitnessGoals: z.string().min(10, "Please describe your fitness goals."),
   riskAssessment: z.string(),
 });
 
 type PlanGenerationData = z.infer<typeof PlanGenerationSchema>;
 
-export async function generatePlan(data: PlanGenerationData) {
+export async function generatePlan(data: PlanGenerationData): Promise<{
+  success: boolean;
+  data?: PersonalizedExercisePlanOutput;
+  error?: string;
+}> {
   try {
     const validatedData = PlanGenerationSchema.parse(data);
 
     const planInput: PersonalizedExercisePlanInput = {
-      age: validatedData.age,
-      sex: validatedData.sex,
-      height: validatedData.height,
-      weight: validatedData.weight,
+      ...validatedData,
       medicalHistory: validatedData.medicalHistory || "",
-      riskAssessment: validatedData.riskAssessment,
-      fitnessGoals: validatedData.fitnessGoals,
     };
 
     const planResult = await generatePersonalizedExercisePlan(planInput);
@@ -91,9 +87,7 @@ export async function generatePlan(data: PlanGenerationData) {
     
     return {
       success: true,
-      data: {
-        exercisePlan: planResult,
-      },
+      data: planResult,
     };
   } catch (error) {
     console.error("Error generating plan:", error);
@@ -104,7 +98,6 @@ export async function generatePlan(data: PlanGenerationData) {
     };
   }
 }
-
 
 const AdjustmentSchema = z.object({
   workoutPlan: z.string(),
@@ -118,17 +111,15 @@ type AdjustmentData = z.infer<typeof AdjustmentSchema>;
 export async function getAdjustedPlan(data: AdjustmentData) {
   try {
     const validatedData = AdjustmentSchema.parse(data);
-    const result = await adjustWorkoutPlan(validatedData);
+    const result = await adjustWorkoutPlan(validatedData as AdjustWorkoutPlanInput);
 
     revalidatePath("/plan");
 
     return {
       success: true,
       data: {
-        exercisePlan: {
-          exercisePlan: result.adjustedWorkoutPlan,
-          safetyAdvice: result.explanation,
-        },
+        exercisePlan: result.adjustedWorkoutPlan,
+        safetyAdvice: result.explanation,
       },
     };
   } catch (error) {
