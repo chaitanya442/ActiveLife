@@ -59,7 +59,7 @@ export default function LoginPage() {
     try {
       await signInWithPopup(auth, googleProvider);
       toast({ title: "Success!", description: "You've been signed in." });
-      router.push("/dashboard");
+      // The useEffect hook will handle the redirect
     } catch (error: any) {
       console.error("Authentication error:", error);
       toast({
@@ -78,7 +78,7 @@ export default function LoginPage() {
     try {
       await signInAnonymously(auth);
       toast({ title: "Welcome, Guest!", description: "You're signed in anonymously." });
-      router.push("/dashboard");
+      // The useEffect hook will handle the redirect
     } catch (error: any) {
       console.error("Anonymous sign-in error:", error);
       toast({
@@ -104,7 +104,7 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Signed In!", description: "Welcome back." });
       }
-      router.push("/dashboard");
+       // The useEffect hook will handle the redirect
     } catch (error: any) {
       console.error("Authentication error:", error);
       toast({
@@ -122,6 +122,14 @@ export default function LoginPage() {
     animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
     exit: { opacity: 0, y: 20, transition: { duration: 0.3 } },
   };
+
+  if (loading || user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
