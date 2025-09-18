@@ -74,3 +74,12 @@ export interface ExtractHighlightsOutput {
   height?: number;
   weight?: number;
 }
+
+export interface WorkoutLog {
+  id: string;
+  planId: string;
+  date: string;
+  workoutFocus: string;
+  duration: number;
+  notes: string;
+}

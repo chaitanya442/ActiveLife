@@ -21,9 +21,11 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ProgressChart } from '@/components/progress-chart';
 import { ProgressPieChart } from '@/components/progress-pie-chart';
-import type { StoredPlan } from '@/lib/types';
+import type { StoredPlan, WorkoutLog } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
+import { LogWorkoutDialog } from '@/components/log-workout-dialog';
+import { format } from 'date-fns';
 
 const workoutTypeData: { name: string, value: number, fill: string }[] = [
     // Example data:
@@ -45,6 +47,9 @@ const muscleGroupData: { name: string, value: number, fill: string }[] = [
 export default function ProgressPage() {
   const [plans, setPlans] = useState<StoredPlan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
+  const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
+
 
   useEffect(() => {
     try {
@@ -57,12 +62,26 @@ export default function ProgressPage() {
           setSelectedPlanId(sortedPlans[0].id);
         }
       }
+
+      const storedLogs = sessionStorage.getItem('workoutLogs');
+      if (storedLogs) {
+        setWorkoutLogs(JSON.parse(storedLogs));
+      }
+
     } catch (error) {
-      console.error("Failed to parse plans from session storage", error);
+      console.error("Failed to parse data from session storage", error);
     }
   }, []);
 
+  const handleLogSaved = (newLog: WorkoutLog) => {
+    const updatedLogs = [...workoutLogs, newLog].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    setWorkoutLogs(updatedLogs);
+    sessionStorage.setItem('workoutLogs', JSON.stringify(updatedLogs));
+  }
+
   const selectedPlan = plans.find(p => p.id === selectedPlanId);
+  const filteredLogs = workoutLogs.filter(log => log.planId === selectedPlanId);
+
 
   if (plans.length === 0) {
     return (
@@ -110,10 +129,17 @@ export default function ProgressPage() {
                     ))}
                 </SelectContent>
             </Select>
-            <Button disabled={!selectedPlan}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Log Workout
-            </Button>
+            <LogWorkoutDialog 
+                plan={selectedPlan} 
+                onLogSaved={handleLogSaved}
+                open={isLogDialogOpen}
+                onOpenChange={setIsLogDialogOpen}
+            >
+                <Button disabled={!selectedPlan}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Log Workout
+                </Button>
+            </LogWorkoutDialog>
         </div>
       </div>
 
@@ -153,17 +179,28 @@ export default function ProgressPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Workout Type</TableHead>
+                <TableHead>Workout</TableHead>
                 <TableHead>Duration</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Notes</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-                <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        No workout history yet.
-                    </TableCell>
-                </TableRow>
+                {filteredLogs.length > 0 ? (
+                    filteredLogs.map(log => (
+                        <TableRow key={log.id}>
+                            <TableCell>{format(new Date(log.date), 'PP')}</TableCell>
+                            <TableCell>{log.workoutFocus}</TableCell>
+                            <TableCell>{log.duration} min</TableCell>
+                            <TableCell className="max-w-[200px] truncate">{log.notes}</TableCell>
+                        </TableRow>
+                    ))
+                ) : (
+                    <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                            No workout history yet for this plan.
+                        </TableCell>
+                    </TableRow>
+                )}
             </TableBody>
           </Table>
         </CardContent>
