@@ -15,10 +15,20 @@ import { motion } from 'framer-motion';
 import { placeholderImages } from '@/lib/placeholder-images';
 import Logo from '@/components/logo';
 import { useAuth } from '@/components/providers/auth-provider';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
   const { user, loading } = useAuth();
+  const router = useRouter();
   const heroImage = placeholderImages.find((img) => img.id === 'hero-1');
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
+
 
   const FADE_IN_ANIMATION_SETTINGS = {
     initial: { opacity: 0, y: 10 },
@@ -38,30 +48,25 @@ export default function Home() {
   };
 
   const getStartedLink = loading ? '#' : user ? '/dashboard' : '/login';
+  
+  if (loading || user) {
+    // Show a loading state or nothing while redirecting
+    return null;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="px-4 lg:px-6 h-16 flex items-center border-b">
         <Logo />
         <nav className="ml-auto flex gap-2 sm:gap-4">
-          {loading ? null : user ? (
-            <Button asChild>
-              <Link href="/dashboard">
-                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4 hidden sm:inline" />
-              </Link>
-            </Button>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/login">Login</Link>
-              </Button>
-              <Button asChild>
-                <Link href={getStartedLink}>
-                  Get Started
-                </Link>
-              </Button>
-            </>
-          )}
+          <Button variant="ghost" asChild>
+            <Link href="/login">Login</Link>
+          </Button>
+          <Button asChild>
+            <Link href={getStartedLink}>
+              Get Started
+            </Link>
+          </Button>
         </nav>
       </header>
       <main className="flex-1">

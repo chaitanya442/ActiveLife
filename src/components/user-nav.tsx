@@ -27,11 +27,13 @@ export function UserNav() {
     router.push("/login");
   };
 
-  const handleSignUp = () => {
-    // Clear session storage so the user is prompted to create a new plan
-    sessionStorage.removeItem("generatedPlan");
-    sessionStorage.removeItem("onboardingData");
-    router.push("/login");
+  const handleSignUp = async () => {
+    // For guest users, sign them out first before redirecting to login/signup
+    if (user?.isAnonymous) {
+      await handleSignOut();
+    } else {
+      router.push("/login");
+    }
   }
 
   if (!user) {
