@@ -70,7 +70,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
 
   const step1Form = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
-    defaultValues: { medicalHistory: '' },
+    defaultValues: { age: '' as any, height: '' as any, weight: '' as any, medicalHistory: '' },
   });
 
   const step2Form = useForm<Step2Data>({
