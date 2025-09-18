@@ -1,3 +1,4 @@
+
 "use server";
 
 import {
@@ -42,7 +43,7 @@ export async function generatePlan(data: OnboardingData) {
       height: validatedData.height,
       weight: validatedData.weight,
       medicalHistoryPdfDataUri:
-        validatedData.pdfDataUri || "data:text/plain;base64,",
+        validatedData.pdfDataUri || "data:application/pdf;base64,",
     };
 
     const riskResult = await riskStratification(riskInput);
@@ -126,3 +127,5 @@ export async function extractDataFromPdf(pdfDataUri: string) {
     };
   }
 }
+
+    

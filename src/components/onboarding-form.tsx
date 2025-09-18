@@ -48,6 +48,22 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+const fileToDataUri = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (typeof e.target?.result === 'string') {
+        resolve(e.target.result);
+      } else {
+        reject(new Error("Failed to read file."));
+      }
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsDataURL(file);
+  });
+};
+
+
 export function OnboardingForm() {
   const router = useRouter();
   const { toast } = useToast();
@@ -96,13 +112,7 @@ export function OnboardingForm() {
     toast({ title: "Reading PDF...", description: "Extracting data from your document. Please wait." });
 
     try {
-      const pdfDataUri = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
-        reader.onerror = (e) => reject(new Error("File reading error."));
-        reader.readAsDataURL(file);
-      });
-      
+      const pdfDataUri = await fileToDataUri(file);
       const result = await extractDataFromPdf(pdfDataUri);
       
       if (result.success && result.data) {
@@ -132,71 +142,46 @@ export function OnboardingForm() {
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-
-    const getPdfDataUri = (file: File): Promise<string> => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                if (e.target?.result) {
-                    resolve(e.target.result as string);
-                } else {
-                    reject(new Error("Failed to read file."));
-                }
-            };
-            reader.onerror = (error) => reject(error);
-            reader.readAsDataURL(file);
-        });
-    };
-
+    
     try {
-        let pdfDataUri: string | undefined;
-        const file = values.medicalHistory?.[0];
+      let pdfDataUri: string | undefined;
+      const file = values.medicalHistory?.[0];
 
-        if (file) {
-            try {
-                pdfDataUri = await getPdfDataUri(file);
-            } catch (error) {
-                toast({
-                    variant: "destructive",
-                    title: "File Read Error",
-                    description: error instanceof Error ? error.message : "Could not process the uploaded file.",
-                });
-                setIsSubmitting(false);
-                return;
-            }
-        }
+      if (file && file instanceof File) {
+        pdfDataUri = await fileToDataUri(file);
+      }
 
-        const onboardingDataForStorage = {
-            age: values.age,
-            sex: values.sex,
-            height: values.height,
-            weight: values.weight,
-            fitnessGoals: values.fitnessGoals,
-        };
+      const onboardingDataForStorage = {
+          age: values.age,
+          sex: values.sex,
+          height: values.height,
+          weight: values.weight,
+          fitnessGoals: values.fitnessGoals,
+      };
 
-        const result = await generatePlan({
-            ...values,
-            medicalHistory: undefined,
-            pdfDataUri,
-        });
+      const result = await generatePlan({
+        ...values,
+        medicalHistory: undefined, // We are not sending this, but the URI
+        pdfDataUri,
+      });
 
-        if (result.success) {
-            toast({
-                title: "Plan Generated!",
-                description: "Redirecting you to your new plan...",
-            });
-            sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
-            sessionStorage.setItem("onboardingData", JSON.stringify(onboardingDataForStorage));
-            router.push("/plan");
-        } else {
-            throw new Error(result.error || "There was a problem generating your plan.");
-        }
-    } catch (error) {
+      if (result.success && result.data) {
         toast({
-            variant: "destructive",
-            title: "Uh oh! Something went wrong.",
-            description: error instanceof Error ? error.message : "An unexpected error occurred.",
+            title: "Plan Generated!",
+            description: "Redirecting you to your new plan...",
         });
+        sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
+        sessionStorage.setItem("onboardingData", JSON.stringify(onboardingDataForStorage));
+        router.push("/plan");
+      } else {
+        throw new Error(result.error || "There was a problem generating your plan.");
+      }
+    } catch (error) {
+      toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: error instanceof Error ? error.message : "An unexpected error occurred.",
+      });
     } finally {
         setIsSubmitting(false);
     }
