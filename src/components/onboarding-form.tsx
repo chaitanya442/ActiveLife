@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,8 +28,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { generatePlan, extractDataFromPdf } from "@/app/actions/user-data";
-import { Loader2, Upload } from "lucide-react";
+import { generatePlan } from "@/app/actions/user-data";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
@@ -48,28 +48,10 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const fileToDataUri = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        resolve(reader.result);
-      } else {
-        reject(new Error("Failed to read file as Data URI."));
-      }
-    };
-    reader.onerror = (error) => reject(error);
-    reader.readAsDataURL(file);
-  });
-};
-
 export function OnboardingForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [fileName, setFileName] = useState("");
-  const [pdfDataUri, setPdfDataUri] = useState<string | undefined>();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -82,66 +64,6 @@ export function OnboardingForm() {
       medicalHistory: "",
     },
   });
-
-  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      setFileName("");
-      setPdfDataUri(undefined);
-      return;
-    }
-
-    if (file.type !== "application/pdf") {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Please upload a PDF file.",
-      });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
-      toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "Please upload a PDF smaller than 5MB.",
-      });
-      return;
-    }
-
-    setIsExtracting(true);
-    setFileName(file.name);
-    toast({ title: "Reading PDF...", description: "Extracting data from your document. Please wait." });
-
-    try {
-      const dataUri = await fileToDataUri(file);
-      setPdfDataUri(dataUri);
-      const result = await extractDataFromPdf(dataUri);
-
-      if (result.success && result.data) {
-        const { age, sex, height, weight } = result.data;
-        if (age) form.setValue("age", age);
-        if (sex) form.setValue("sex", sex);
-        if (height) form.setValue("height", height);
-        if (weight) form.setValue("weight", weight);
-        toast({
-          title: "Success!",
-          description: "We've pre-filled the form with the data found in your PDF.",
-        });
-      } else {
-        throw new Error(result.error || "Failed to extract data.");
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Could not read PDF",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-      });
-      setFileName("");
-      setPdfDataUri(undefined);
-    } finally {
-      setIsExtracting(false);
-    }
-  };
   
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
@@ -155,10 +77,7 @@ export function OnboardingForm() {
           fitnessGoals: values.fitnessGoals,
       };
 
-      const result = await generatePlan({
-        ...values,
-        pdfDataUri: pdfDataUri,
-      });
+      const result = await generatePlan(values);
 
       if (result.success && result.data) {
         toast({
@@ -181,8 +100,6 @@ export function OnboardingForm() {
         setIsSubmitting(false);
     }
   };
-
-  const medicalHistoryRef = form.register("medicalHistory");
 
   return (
     <Card className="w-full max-w-2xl">
@@ -273,34 +190,25 @@ export function OnboardingForm() {
               />
             </div>
 
-            <FormItem>
-              <FormLabel>Medical History (Optional PDF)</FormLabel>
-              <FormControl>
-                <Button asChild variant="outline" className="w-full" disabled={isExtracting}>
-                  <label className="cursor-pointer flex items-center justify-center">
-                    {isExtracting ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Upload className="mr-2 h-4 w-4" />
-                    )}
-                    {isExtracting ? "Reading PDF..." : (fileName || "Upload PDF & Pre-fill Form")}
-                    <Input
-                      type="file"
-                      className="hidden"
-                      accept=".pdf"
-                      {...medicalHistoryRef}
-                      value={undefined}
-                      onChange={handleFileChange}
-                      disabled={isExtracting}
+             <FormField
+              control={form.control}
+              name="medicalHistory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Medical History</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Please list any relevant medical conditions, allergies, or injuries."
+                      {...field}
                     />
-                  </label>
-                </Button>
-              </FormControl>
-              <FormDescription>
-                For the most accurate risk assessment, upload a PDF. We can try to pre-fill the form for you.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
+                  </FormControl>
+                   <FormDescription>
+                    This information is crucial for creating a safe and effective plan.
+                  </FormDescription>
+                  <FormMessage />
+                </Item>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -321,7 +229,7 @@ export function OnboardingForm() {
                 </Item>
               )}
             />
-            <Button type="submit" size="lg" disabled={isSubmitting || isExtracting} className="w-full">
+            <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

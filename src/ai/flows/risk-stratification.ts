@@ -1,7 +1,8 @@
+
 'use server';
 
 /**
- * @fileOverview Analyzes user's medical history PDF to assess risk factors.
+ * @fileOverview Analyzes user's medical history to assess risk factors.
  *
  * - riskStratification - A function that handles the risk stratification process.
  * - RiskStratificationInput - The input type for the riskStratification function.
@@ -12,11 +13,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const RiskStratificationInputSchema = z.object({
-  medicalHistoryPdfDataUri: z
+  medicalHistory: z
     .string()
-    .describe(
-      "User's medical history as a PDF data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
-    ),
+    .describe("User's self-reported medical history."),
   age: z.number().describe('The age of the user.'),
   sex: z.string().describe('The sex of the user.'),
   height: z.number().describe('The height of the user in cm.'),
@@ -40,10 +39,9 @@ const prompt = ai.definePrompt({
   output: {schema: RiskStratificationOutputSchema},
   prompt: `You are a medical expert specializing in risk stratification for exercise plans.
 
-  Analyze the user's medical history from the provided document and their other data to assess their risk factors and identify any contraindications for exercise.
+  Analyze the user's self-reported medical history and other data to assess their risk factors and identify any contraindications for exercise.
 
-  The user's medical history document is provided as a data URI.
-  Medical History: {{media url=medicalHistoryPdfDataUri}}
+  User's Medical History: {{{medicalHistory}}}
 
   Consider the following information:
   - Age: {{{age}}}
@@ -51,7 +49,7 @@ const prompt = ai.definePrompt({
   - Height: {{{height}}} cm
   - Weight: {{{weight}}} kg
 
-  Provide a detailed risk assessment and list any contraindications for exercise. If the medical history document is empty or not provided, state that the assessment is based only on the user-provided data.`,
+  Provide a detailed risk assessment and list any contraindications for exercise. If the medical history is empty or not provided, state that the assessment is based only on the user-provided data and that a medical consultation is recommended.`,
 });
 
 const riskStratificationFlow = ai.defineFlow(
