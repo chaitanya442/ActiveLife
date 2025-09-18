@@ -4,7 +4,7 @@
 /**
  * @fileOverview This file defines a Genkit flow for creating a personalized exercise plan.
  *
- * The flow takes user data as input, uses an LLM to perform a risk assessment
+ * The flow takes user data as input, including an optional PDF document, uses an LLM to perform a risk assessment
  * and generate a personalized workout plan, and returns the plan along with safety advice.
  *
  * @exports {
@@ -24,6 +24,7 @@ const CreateExercisePlanInputSchema = z.object({
   height: z.number().describe('The height of the user in centimeters.'),
   weight: z.number().describe('The weight of the user in kilograms.'),
   medicalHistory: z.string().optional().describe('The medical history of the user.'),
+  medicalPdf: z.string().optional().describe("An optional medical document in PDF format, as a data URI. Expected format: 'data:application/pdf;base64,<encoded_data>'."),
   fitnessGoals: z.string().describe('The fitness goals of the user.'),
 });
 export type CreateExercisePlanInput = z.infer<typeof CreateExercisePlanInputSchema>;
@@ -56,9 +57,12 @@ const createPlanPrompt = ai.definePrompt({
   - Weight: {{{weight}}} kg
   - Medical History: {{{medicalHistory}}}
   - Fitness Goals: {{{fitnessGoals}}}
+  {{#if medicalPdf}}
+  - Attached Medical Document: {{media url=medicalPdf}}
+  {{/if}}
 
   Instructions:
-  1.  **Risk Assessment**: First, analyze the user's medical history, age, and other data for any potential risks or contraindications. Formulate critical safety advice and warnings. This is the most important step. If the user has significant health risks, the safety advice should be very prominent and clear.
+  1.  **Risk Assessment**: First, analyze all provided data, including the user's medical history, age, other data, and the content of the attached medical document if provided. Formulate critical safety advice and warnings based on a comprehensive review of all information. This is the most important step. If the user has significant health risks (identified from any source), the safety advice should be very prominent and clear.
   2.  **Create Exercise Plan**: Based on the user's goals and physical data, create a detailed, week-by-week exercise plan. The plan should be structured, easy to follow, and include specific exercises, sets, reps, and rest periods. Include a warm-up and cool-down routine.
   3.  **Return Output**: Respond with the generated exercise plan and the crucial safety advice in the specified JSON format. The 'safetyAdvice' field should contain all contraindications and safety warnings.
   `,

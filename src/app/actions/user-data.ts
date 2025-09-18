@@ -19,6 +19,7 @@ const PlanCreationSchema = z.object({
   height: z.number(),
   weight: z.number(),
   medicalHistory: z.string().optional(),
+  medicalPdf: z.string().optional(),
   fitnessGoals: z.string().min(10, "Please provide more detailed goals."),
 });
 

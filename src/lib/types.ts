@@ -5,6 +5,7 @@ export interface OnboardingData {
   height: number;
   weight: number;
   medicalHistory?: string;
+  medicalPdf?: string;
   fitnessGoals?: string;
 }
 

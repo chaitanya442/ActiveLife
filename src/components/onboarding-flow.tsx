@@ -35,8 +35,9 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateNewPlan } from '@/app/actions/user-data';
-import { Loader2, User, HeartPulse, Target as TargetIcon } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { ExercisePlan, OnboardingData } from '@/lib/types';
+import { Label } from './ui/label';
 
 interface OnboardingFlowProps {
   onPlanGenerated: (plan: ExercisePlan, data: OnboardingData) => void;
@@ -48,6 +49,7 @@ const step1Schema = z.object({
   height: z.coerce.number().min(100, "Height must be in cm.").max(250),
   weight: z.coerce.number().min(30, "Weight must be in kg.").max(300),
   medicalHistory: z.string().optional(),
+  medicalPdf: z.string().optional(),
 });
 
 const step2Schema = z.object({
@@ -60,6 +62,7 @@ type Step2Data = z.infer<typeof step2Schema>;
 export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
   const step1Form = useForm<Step1Data>({
@@ -73,6 +76,31 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
 
   const onNextStep = () => setStep(2);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast({
+          variant: 'destructive',
+          title: 'Invalid File Type',
+          description: 'Please upload a PDF file.',
+        });
+        return;
+      }
+      setFileName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUri = reader.result as string;
+        step1Form.setValue('medicalPdf', dataUri);
+      };
+      reader.readAsDataURL(file);
+    } else {
+        setFileName(null);
+        step1Form.setValue('medicalPdf', undefined);
+    }
+  };
+
+
   const onFinalSubmit = async (values: Step2Data) => {
     setIsSubmitting(true);
     const step1Values = step1Form.getValues();
@@ -85,7 +113,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
           title: 'Your Plan is Ready!',
           description: "We've generated a personalized fitness plan for you.",
         });
-        onPlanGenerated(result.data, finalData);
+        onPlanGenerated(result.data, finalData as OnboardingData);
       } else {
         throw new Error(result.error || 'Failed to generate plan.');
       }
@@ -209,6 +237,17 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                           </FormItem>
                         )}
                       />
+                      <div className="space-y-2">
+                        <Label>Medical Document (Optional PDF)</Label>
+                        <Input id="pdf-upload" type="file" accept="application/pdf" className="hidden" onChange={handleFileChange} />
+                        <Button asChild variant="outline" className="w-full cursor-pointer">
+                           <Label htmlFor="pdf-upload" className="flex items-center gap-2 cursor-pointer">
+                                <Upload className="h-4 w-4" />
+                                {fileName ? `Selected: ${fileName}` : 'Upload PDF'}
+                           </Label>
+                        </Button>
+                      </div>
+
                     <CardFooter className="px-0 justify-end">
                       <Button type="submit">Next</Button>
                     </CardFooter>
