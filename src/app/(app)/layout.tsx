@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, ReactNode } from "react";
@@ -16,6 +17,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -36,6 +38,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     enter: { opacity: 1, x: 0, y: 0 },
     exit: { opacity: 0, x: 0, y: -20 },
   };
+  
+  const handleLinkClick = () => {
+    setIsSheetOpen(false);
+  };
+
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -53,7 +60,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </div>
       <div className="flex flex-col">
         <header className="flex h-16 items-center gap-4 border-b bg-card px-4 lg:px-6">
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon" className="shrink-0 md:hidden">
                 <Menu className="h-5 w-5" />
@@ -67,7 +74,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </SheetHeader>
               <nav className="grid gap-2 text-lg font-medium">
                 <Logo />
-                <MainNav />
+                <MainNav onLinkClick={handleLinkClick} />
               </nav>
             </SheetContent>
           </Sheet>
