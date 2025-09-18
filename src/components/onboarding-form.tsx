@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -39,7 +40,7 @@ const formSchema = z.object({
   }),
   height: z.coerce.number().min(50, "Please enter a valid height in cm."),
   weight: z.coerce.number().min(20, "Please enter a valid weight in kg."),
-  medicalHistory: z.instanceof(File).optional(),
+  medicalHistory: z.any(),
   fitnessGoals: z
     .string()
     .min(10, "Please describe your fitness goals in at least 10 characters."),
@@ -57,6 +58,7 @@ export function OnboardingForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       age: 18,
+      sex: undefined,
       height: 170,
       weight: 70,
       fitnessGoals: "",
@@ -66,7 +68,7 @@ export function OnboardingForm() {
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
 
-    const file = values.medicalHistory;
+    const file = values.medicalHistory?.[0];
     let pdfDataUri: string | undefined;
 
     if (file) {
@@ -136,6 +138,8 @@ export function OnboardingForm() {
       });
     }
   };
+
+  const medicalHistoryRef = form.register('medicalHistory');
 
   return (
     <Card className="w-full max-w-2xl">
@@ -226,39 +230,33 @@ export function OnboardingForm() {
               />
             </div>
 
-            <FormField
-              control={form.control}
-      name="medicalHistory"
-      render={({ field: { onChange, ...rest } }) => (
-                <FormItem>
-                  <FormLabel>Medical History (Optional PDF)</FormLabel>
-                  <FormControl>
-                    <Button asChild variant="outline" className="w-full">
-                      <label className="cursor-pointer flex items-center justify-center">
-                        <Upload className="mr-2 h-4 w-4" />
-                        {fileName || "Upload PDF"}
-                        <Input
-                          type="file"
-                          className="hidden"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            onChange(file);
-                            setFileName(file?.name || "");
-                          }}
-                          {...rest}
-                        />
-                      </label>
-                    </Button>
-                  </FormControl>
-                  <FormDescription>
-                    For the most accurate risk assessment, upload a PDF of your
-                    medical history.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>Medical History (Optional PDF)</FormLabel>
+              <FormControl>
+                <Button asChild variant="outline" className="w-full">
+                  <label className="cursor-pointer flex items-center justify-center">
+                    <Upload className="mr-2 h-4 w-4" />
+                    {fileName || "Upload PDF"}
+                    <Input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf"
+                      {...medicalHistoryRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        medicalHistoryRef.onChange(e);
+                        setFileName(file?.name || "");
+                      }}
+                    />
+                  </label>
+                </Button>
+              </FormControl>
+              <FormDescription>
+                For the most accurate risk assessment, upload a PDF of your
+                medical history.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
 
             <FormField
               control={form.control}
