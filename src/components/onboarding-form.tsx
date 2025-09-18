@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,9 +51,9 @@ type FormValues = z.infer<typeof formSchema>;
 const fileToDataUri = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      if (typeof e.target?.result === 'string') {
-        resolve(e.target.result);
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
       } else {
         reject(new Error("Failed to read file."));
       }
@@ -62,7 +62,6 @@ const fileToDataUri = (file: File): Promise<string> => {
     reader.readAsDataURL(file);
   });
 };
-
 
 export function OnboardingForm() {
   const router = useRouter();
@@ -82,7 +81,7 @@ export function OnboardingForm() {
     },
   });
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) {
       setFileName("");
@@ -99,7 +98,7 @@ export function OnboardingForm() {
       });
       return;
     }
-     if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
       toast({
         variant: "destructive",
         title: "File too large",
@@ -114,7 +113,7 @@ export function OnboardingForm() {
     try {
       const pdfDataUri = await fileToDataUri(file);
       const result = await extractDataFromPdf(pdfDataUri);
-      
+
       if (result.success && result.data) {
         const { age, sex, height, weight } = result.data;
         if (age) form.setValue("age", age);
@@ -128,7 +127,6 @@ export function OnboardingForm() {
       } else {
         throw new Error(result.error || "Failed to extract data.");
       }
-
     } catch (error) {
       toast({
         variant: "destructive",
@@ -139,7 +137,7 @@ export function OnboardingForm() {
       setIsExtracting(false);
     }
   };
-
+  
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     
@@ -161,8 +159,7 @@ export function OnboardingForm() {
 
       const result = await generatePlan({
         ...values,
-        medicalHistory: undefined, // We are not sending this, but the URI
-        pdfDataUri,
+        pdfDataUri: pdfDataUri,
       });
 
       if (result.success && result.data) {
@@ -341,5 +338,3 @@ export function OnboardingForm() {
     </Card>
   );
 }
-
-    
