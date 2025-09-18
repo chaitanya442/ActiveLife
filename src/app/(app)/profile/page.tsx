@@ -117,7 +117,7 @@ export default function ProfilePage() {
       )}
 
       <Card className="overflow-hidden">
-        <div className="relative h-48 w-full">
+        <div className="relative h-32 md:h-48 w-full">
             {profileHeaderImage && (
                 <Image
                     src={profileHeaderImage.imageUrl}
@@ -128,17 +128,17 @@ export default function ProfilePage() {
                 />
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
+            <div className="absolute bottom-0 left-0 right-0 p-2 md:p-6">
                 <div className="flex items-end gap-4">
-                    <Avatar className="h-24 w-24 border-4 border-background">
+                    <Avatar className="h-20 w-20 md:h-24 md:w-24 border-4 border-background">
                         <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? ''} />
-                        <AvatarFallback className="text-3xl">{getInitials(user.displayName)}</AvatarFallback>
+                        <AvatarFallback className="text-2xl md:text-3xl">{getInitials(user.displayName)}</AvatarFallback>
                     </Avatar>
-                    <div className="mb-2">
-                        <h1 className="text-3xl font-bold font-headline">
+                    <div className="mb-1 md:mb-2">
+                        <h1 className="text-2xl md:text-3xl font-bold font-headline">
                             {user.isAnonymous ? 'Guest User' : user.displayName || 'User'}
                         </h1>
-                        <p className="text-muted-foreground">{user.email}</p>
+                        <p className="text-xs md:text-sm text-muted-foreground">{user.email}</p>
                     </div>
                 </div>
             </div>

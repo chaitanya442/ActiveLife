@@ -101,7 +101,7 @@ export default function DashboardPage() {
         </div>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">BMI</CardTitle>
@@ -194,22 +194,22 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="flex items-center space-x-4 rounded-md border p-4">
-              <ClipboardList />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-md border p-4">
+              <ClipboardList className="h-8 w-8 sm:h-6 sm:w-6" />
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium leading-none">My Plan</p>
                 <p className="text-sm text-muted-foreground">
                   View, adjust, or create a new workout plan.
                 </p>
               </div>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link href="/plan">
                   Manage <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>
-            <div className="flex items-center space-x-4 rounded-md border p-4">
-              <TrendingUp />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-md border p-4">
+              <TrendingUp className="h-8 w-8 sm:h-6 sm:w-6" />
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium leading-none">
                   Track Progress
@@ -218,7 +218,7 @@ export default function DashboardPage() {
                   Log your workouts and see your improvements.
                 </p>
               </div>
-              <Button asChild variant="outline" size="sm">
+              <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                 <Link href="/progress">
                   Track <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
