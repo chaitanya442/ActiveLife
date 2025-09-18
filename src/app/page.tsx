@@ -102,7 +102,15 @@ export default function Home() {
                     className="flex flex-col gap-4 min-[400px]:flex-row"
                 >
                   <div className='flex flex-col gap-2'>
-                    <p className='text-sm text-muted-foreground'>Stop following generic workout routines. ActiveLife's AI analyzes your unique data to build a safe and effective plan that's tailored just for you.</p>
+                    <div className="text-sm text-muted-foreground space-y-2">
+                        <p className="font-semibold text-foreground">Your Personal Prescription System:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                            <li>Safe exercise plans based on medical history.</li>
+                            <li>Dynamic adjustments for intensity & duration.</li>
+                            <li>Performance monitoring via wearables.</li>
+                            <li>Progress tracking and safety alerts.</li>
+                        </ul>
+                    </div>
                     <Button size="lg" asChild>
                       <Link href={getStartedLink}>
                         Generate Your Free Plan
