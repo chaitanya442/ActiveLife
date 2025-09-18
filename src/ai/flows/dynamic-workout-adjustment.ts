@@ -27,11 +27,27 @@ const DailyExerciseSchema = z.object({
   })).describe('A list of exercises for the day.'),
 });
 
+const MealNutritionSchema = z.object({
+  calories: z.string().describe("Estimated calories for the meal."),
+  protein: z.string().describe("Grams of protein for the meal."),
+  carbs: z.string().describe("Grams of carbohydrates for the meal."),
+  fat: z.string().describe("Grams of fat for the meal."),
+});
+
 const DietPlanSchema = z.object({
     summary: z.string().describe("A general overview of the diet plan, including nutritional advice."),
-    breakfast: z.array(z.string()).describe("A list of healthy breakfast suggestions."),
-    lunch: z.array(z.string()).describe("A list of healthy lunch suggestions."),
-    dinner: z.array(z.string()).describe("A list of healthy dinner suggestions."),
+    breakfast: z.object({
+        suggestions: z.array(z.string()).describe("A list of healthy breakfast suggestions."),
+        nutrition: MealNutritionSchema.describe("Nutritional targets for breakfast.")
+    }),
+    lunch: z.object({
+        suggestions: z.array(z.string()).describe("A list of healthy lunch suggestions."),
+        nutrition: MealNutritionSchema.describe("Nutritional targets for lunch.")
+    }),
+    dinner: z.object({
+        suggestions: z.array(z.string()).describe("A list of healthy dinner suggestions."),
+        nutrition: MealNutritionSchema.describe("Nutritional targets for dinner.")
+    }),
     snacks: z.array(z.string()).describe("A list of healthy snack suggestions."),
 });
 
@@ -39,7 +55,7 @@ const DietPlanSchema = z.object({
 // Define the input schema for the adjustWorkoutPlan function
 const AdjustWorkoutPlanInputSchema = z.object({
   exercisePlan: z.array(DailyExerciseSchema).describe('The current structured workout plan.'),
-  dietPlan: DietPlanSchema.describe('The current diet plan text.'),
+  dietPlan: DietPlanSchema.describe('The current diet plan.'),
   macros: z.object({
     carbs: z.number(),
     protein: z.number(),
@@ -54,7 +70,7 @@ export type AdjustWorkoutPlanInput = z.infer<typeof AdjustWorkoutPlanInputSchema
 
 const AdjustWorkoutPlanOutputSchema = z.object({
     adjustedExercisePlan: z.array(DailyExerciseSchema).describe("The adjusted, day-by-day exercise plan for one week."),
-    adjustedDietPlan: DietPlanSchema.describe("The adjusted general overview of the diet plan."),
+    adjustedDietPlan: DietPlanSchema.describe("The adjusted structured diet plan with meal suggestions and nutritional info."),
     adjustedMacros: z.object({
         carbs: z.number().describe("The adjusted percentage of daily calories from carbohydrates."),
         protein: z.number().describe("The adjusted percentage of daily calories from protein."),
@@ -95,7 +111,7 @@ const adjustWorkoutPlanPrompt = ai.definePrompt({
 
   Based on the user feedback, performance data, and fitness goals, adjust the exercise plan, diet plan, and macronutrient breakdown.
   - For the exercise plan, consider intensity, volume, exercise selection, and rest periods. Return a full 7-day structured plan.
-  - For the diet plan, consider caloric intake, macronutrient distribution, and food preferences mentioned in the feedback. Return a structured diet plan with a summary and meal suggestions.
+  - For the diet plan, consider caloric intake, macronutrient distribution, and food preferences mentioned in the feedback. Return a structured diet plan with a summary, meal suggestions, and per-meal nutritional targets.
   - For the macros, ensure the new percentages add up to 100.
 
   Ensure that the adjusted plans are safe, effective, and still aligned with the user's primary fitness goals.

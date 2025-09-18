@@ -28,11 +28,23 @@ export interface DailyExercise {
   }[];
 }
 
+export interface MealNutrition {
+  calories: string;
+  protein: string;
+  carbs: string;
+  fat: string;
+}
+
+export interface Meal {
+    suggestions: string[];
+    nutrition: MealNutrition;
+}
+
 export interface DetailedDietPlan {
     summary: string;
-    breakfast: string[];
-    lunch: string[];
-    dinner: string[];
+    breakfast: Meal;
+    lunch: Meal;
+    dinner: Meal;
     snacks: string[];
 }
 

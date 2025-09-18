@@ -40,19 +40,36 @@ const DailyExerciseSchema = z.object({
   })).describe('A list of exercises for the day.'),
 });
 
+
+const MealNutritionSchema = z.object({
+  calories: z.string().describe("Estimated calories for the meal."),
+  protein: z.string().describe("Grams of protein for the meal."),
+  carbs: z.string().describe("Grams of carbohydrates for the meal."),
+  fat: z.string().describe("Grams of fat for the meal."),
+});
+
 // Define a more detailed diet plan schema
 const DietPlanSchema = z.object({
     summary: z.string().describe("A general overview of the diet plan, including nutritional advice."),
-    breakfast: z.array(z.string()).describe("A list of healthy breakfast suggestions."),
-    lunch: z.array(z.string()).describe("A list of healthy lunch suggestions."),
-    dinner: z.array(z.string()).describe("A list of healthy dinner suggestions."),
+    breakfast: z.object({
+        suggestions: z.array(z.string()).describe("A list of healthy breakfast suggestions."),
+        nutrition: MealNutritionSchema.describe("Nutritional targets for breakfast.")
+    }),
+    lunch: z.object({
+        suggestions: z.array(z.string()).describe("A list of healthy lunch suggestions."),
+        nutrition: MealNutritionSchema.describe("Nutritional targets for lunch.")
+    }),
+    dinner: z.object({
+        suggestions: z.array(z.string()).describe("A list of healthy dinner suggestions."),
+        nutrition: MealNutritionSchema.describe("Nutritional targets for dinner.")
+    }),
     snacks: z.array(z.string()).describe("A list of healthy snack suggestions."),
 });
 
 // Define the structured output schema for the entire plan
 const CreateExercisePlanOutputSchema = z.object({
   exercisePlan: z.array(DailyExerciseSchema).describe("A detailed, day-by-day exercise plan for one week, tailored to the user's data and goals. Ensure a full 7-day schedule, including rest days."),
-  dietPlan: DietPlanSchema.describe("A structured diet plan with a summary and specific meal suggestions."),
+  dietPlan: DietPlanSchema.describe("A structured diet plan with a summary and specific meal suggestions including nutritional breakdown per meal."),
   macros: z.object({
     carbs: z.number().describe("Percentage of daily calories from carbohydrates."),
     protein: z.number().describe("Percentage of daily calories from protein."),
@@ -92,7 +109,7 @@ const createPlanPrompt = ai.definePrompt({
   1.  **Risk Assessment**: First, analyze all provided data, including the user's medical history, age, other data, and the content of the attached medical document if provided.
   2.  **Generate Safety Advice**: Formulate a **brief and small summary (a few lines)** of the most critical safety advice and warnings based on a comprehensive review of all information. This is the most important step. If the user has significant health risks, the safety advice should be very prominent and clear but concise.
   3.  **Create Structured Exercise Plan**: Based on the user's goals and physical data, create a structured, day-by-day exercise plan for a full 7-day week. For each day, provide the focus (e.g., 'Upper Body', 'Cardio', 'Rest'), and a list of specific exercises with sets and reps. Format this as the 'exercisePlan' array in the output.
-  4.  **Create Diet Plan & Macros**: Create a detailed, structured diet plan. Provide a general summary, and then lists of specific, healthy meal suggestions for breakfast, lunch, dinner, and snacks. Also, provide a recommended daily macronutrient breakdown (carbs, protein, fat) as percentages. Ensure the percentages add up to 100.
+  4.  **Create Diet Plan & Macros**: Create a detailed, structured diet plan. Provide a general summary, and then lists of specific, healthy meal suggestions for breakfast, lunch, and dinner, along with snack ideas. For each of the main three meals (breakfast, lunch, dinner), provide a target nutritional breakdown (calories, protein, carbs, fat). Also, provide a recommended daily macronutrient breakdown (carbs, protein, fat) as percentages for the main 'macros' object. Ensure the percentages add up to 100.
   5.  **Return Output**: Respond with the generated structured exercise plan, the structured diet plan, the macronutrient breakdown, and the crucial safety advice in the specified JSON format.
   `,
 });
