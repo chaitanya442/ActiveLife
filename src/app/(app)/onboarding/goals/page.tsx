@@ -24,7 +24,7 @@ import { generatePlan } from '@/app/actions/user-data';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RiskAssessment } from '@/lib/types';
-import type { OnboardingStep1Data } from '@/components/onboarding-form';
+import type { OnboardingStep1Data } from '@/app/(app)/onboarding/start/page';
 
 const formSchema = z.object({
   fitnessGoals: z.string().min(10, "Please describe your fitness goals in at least 10 characters."),
