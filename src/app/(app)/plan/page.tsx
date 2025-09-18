@@ -31,15 +31,10 @@ export default function PlanPage() {
         if (parsedPlan.exercisePlan && parsedOnboarding.fitnessGoals) {
           setPlanData(parsedPlan);
           setOnboardingData(parsedOnboarding);
-        } else {
-          router.push("/onboarding");
         }
-      } else {
-        router.push("/onboarding");
       }
     } catch (error) {
       console.error("Failed to parse plan data from session storage", error);
-      router.push("/onboarding");
     } finally {
       setLoading(false);
     }
@@ -56,15 +51,17 @@ export default function PlanPage() {
   if (!planData || !onboardingData) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Card className="text-center">
+        <Card className="text-center max-w-lg">
             <CardHeader>
                 <CardTitle>No Plan Found</CardTitle>
                 <CardDescription>
-                    We couldn't find your generated plan. Please create one.
+                    We couldn't find a generated plan in your session. Please note that the "New Plan" feature has been temporarily removed.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <Button onClick={() => router.push('/onboarding')}>Create a Plan</Button>
+                <p className="text-sm text-muted-foreground">
+                    If you have generated a plan previously in this session, it will be displayed here.
+                </p>
             </CardContent>
         </Card>
       </div>

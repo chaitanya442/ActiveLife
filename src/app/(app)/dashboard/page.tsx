@@ -224,22 +224,6 @@ export default function DashboardPage() {
                 </Link>
               </Button>
             </div>
-            <div className="flex items-center space-x-4 rounded-md border p-4">
-              <Activity />
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium leading-none">
-                  New Onboarding
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Start over with a new fitness assessment.
-                </p>
-              </div>
-              <Button asChild variant="outline" size="sm">
-                <Link href="/onboarding">
-                  Start <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>

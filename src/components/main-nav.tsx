@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   ClipboardList,
-  FileText,
   TrendingUp,
   User,
 } from "lucide-react";
@@ -17,7 +16,6 @@ const navigation = [
   { name: "My Plan", href: "/plan", icon: ClipboardList },
   { name: "Progress", href: "/progress", icon: TrendingUp },
   { name: "Profile", href: "/profile", icon: User },
-  { name: "New Plan", href: "/onboarding", icon: FileText, highlight: true },
 ];
 
 export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {

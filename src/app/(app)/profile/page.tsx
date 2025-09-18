@@ -124,15 +124,11 @@ export default function ProfilePage() {
         {onboardingData && (
         <div className="lg:col-span-2 space-y-6">
             <Card>
-                <CardHeader className="flex flex-row justify-between items-start">
+                <CardHeader>
                     <div>
                         <CardTitle>Health & Fitness Data</CardTitle>
-                        <CardDescription>This information is used to personalize your plan.</CardDescription>
+                        <CardDescription>This information is from your last generated plan.</CardDescription>
                     </div>
-                    <Button variant="outline" size="icon" onClick={() => router.push('/onboarding')}>
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
-                    </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
