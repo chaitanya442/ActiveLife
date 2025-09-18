@@ -32,7 +32,8 @@ export type CreateExercisePlanInput = z.infer<typeof CreateExercisePlanInputSche
 // Define the output schema for the createExercisePlan function
 const CreateExercisePlanOutputSchema = z.object({
   exercisePlan: z.string().describe("A detailed, week-by-week exercise plan tailored to the user's data and goals. Include warm-ups and cool-downs."),
-  safetyAdvice: z.string().describe("Important safety advice, contraindications, and recommendations based on the user's data and the generated plan."),
+  dietPlan: z.string().describe("A comprehensive diet plan that complements the exercise plan, including meal suggestions and nutritional advice."),
+  safetyAdvice: z.string().describe("A brief and small summary of the most important safety advice, contraindications, and recommendations based on the user's data."),
 });
 export type CreateExercisePlanOutput = z.infer<typeof CreateExercisePlanOutputSchema>;
 
@@ -48,7 +49,7 @@ const createPlanPrompt = ai.definePrompt({
   name: 'createPlanPrompt',
   input: { schema: CreateExercisePlanInputSchema },
   output: { schema: CreateExercisePlanOutputSchema },
-  prompt: `You are an expert fitness coach and medical advisor. Your task is to create a personalized fitness plan based on the user's data.
+  prompt: `You are an expert fitness coach and medical advisor. Your task is to create a holistic fitness plan based on the user's data.
 
   User Data:
   - Age: {{{age}}}
@@ -62,9 +63,11 @@ const createPlanPrompt = ai.definePrompt({
   {{/if}}
 
   Instructions:
-  1.  **Risk Assessment**: First, analyze all provided data, including the user's medical history, age, other data, and the content of the attached medical document if provided. Formulate critical safety advice and warnings based on a comprehensive review of all information. This is the most important step. If the user has significant health risks (identified from any source), the safety advice should be very prominent and clear.
-  2.  **Create Exercise Plan**: Based on the user's goals and physical data, create a detailed, week-by-week exercise plan. The plan should be structured, easy to follow, and include specific exercises, sets, reps, and rest periods. Include a warm-up and cool-down routine.
-  3.  **Return Output**: Respond with the generated exercise plan and the crucial safety advice in the specified JSON format. The 'safetyAdvice' field should contain all contraindications and safety warnings.
+  1.  **Risk Assessment**: First, analyze all provided data, including the user's medical history, age, other data, and the content of the attached medical document if provided.
+  2.  **Generate Safety Advice**: Formulate a **brief and small** summary of the most critical safety advice and warnings based on a comprehensive review of all information. This is the most important step. If the user has significant health risks, the safety advice should be very prominent and clear but concise.
+  3.  **Create Exercise Plan**: Based on the user's goals and physical data, create a detailed, week-by-week exercise plan. The plan should be structured, easy to follow, and include specific exercises, sets, reps, and rest periods. Include a warm-up and cool-down routine.
+  4.  **Create Diet Plan**: Create a diet plan that aligns with the user's fitness goals and complements the exercise plan. Provide general nutritional advice and example meal suggestions.
+  5.  **Return Output**: Respond with the generated exercise plan, diet plan, and the crucial safety advice in the specified JSON format.
   `,
 });
 

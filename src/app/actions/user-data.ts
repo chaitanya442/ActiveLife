@@ -54,6 +54,7 @@ export async function getAdjustedPlan(data: AdjustmentData) {
       success: true,
       data: {
         exercisePlan: result.adjustedWorkoutPlan,
+        dietPlan: "", // Diet plan is not adjusted in this flow yet
         safetyAdvice: result.explanation,
       },
     };

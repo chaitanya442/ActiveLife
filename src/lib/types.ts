@@ -18,5 +18,6 @@ export interface UserData extends OnboardingData {
 
 export interface ExercisePlan {
   exercisePlan: string;
+  dietPlan: string;
   safetyAdvice: string;
 }

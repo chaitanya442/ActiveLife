@@ -20,16 +20,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { getAdjustedPlan } from "@/app/actions/user-data";
-import { Loader2, ShieldAlert, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, ShieldAlert, Sparkles, Wand2, Apple, Dumbbell } from "lucide-react";
 
 interface ExercisePlanProps {
   initialPlan: ExercisePlanType;
   fitnessGoals: string;
 }
 
-const parsePlan = (planText: string) => {
-  const sections = planText.split(/Week \d+:|Warm-up:|Cool-down:/i).filter(s => s.trim() !== "");
-  const titles = planText.match(/Week \d+:|Warm-up:|Cool-down:/gi) || [];
+const parseSection = (planText: string | undefined) => {
+  if (!planText) return [];
+  const sections = planText.split(/Week \d+:|Warm-up:|Cool-down:|Monday:|Tuesday:|Wednesday:|Thursday:|Friday:|Saturday:|Sunday:|Breakfast:|Lunch:|Dinner:|Snacks:/i).filter(s => s.trim() !== "");
+  const titles = planText.match(/Week \d+:|Warm-up:|Cool-down:|Monday:|Tuesday:|Wednesday:|Thursday:|Friday:|Saturday:|Sunday:|Breakfast:|Lunch:|Dinner:|Snacks:/gi) || [];
+
+  if (titles.length === 0 && sections.length > 0) {
+    return [{
+      title: "General",
+      content: sections[0].trim().split('\n').map(line => line.trim()).filter(Boolean)
+    }];
+  }
 
   return titles.map((title, index) => ({
     title: title.replace(":", "").trim(),
@@ -50,7 +58,8 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
   const [isAdjusting, setIsAdjusting] = useState(false);
   const { toast } = useToast();
   
-  const parsedPlan = parsePlan(plan.exercisePlan);
+  const parsedExercisePlan = parseSection(plan.exercisePlan);
+  const parsedDietPlan = parseSection(plan.dietPlan);
 
   const form = useForm<{ userFeedback: string }>({
     resolver: zodResolver(adjustmentFormSchema),
@@ -103,32 +112,61 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
         <AlertDescription>{plan.safetyAdvice}</AlertDescription>
       </Alert>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="text-accent" />
-            Workout Schedule
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
-            {parsedPlan.map((section, index) => (
-              <AccordionItem value={`item-${index}`} key={index}>
-                <AccordionTrigger className="font-semibold font-headline text-lg">
-                  {section.title}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
-                    {section.content.map((line, lineIndex) => (
-                      <li key={lineIndex}>{line}</li>
-                    ))}
-                  </ul>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </CardContent>
-      </Card>
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card>
+            <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Dumbbell className="text-primary" />
+                Exercise Plan
+            </CardTitle>
+            </CardHeader>
+            <CardContent>
+            <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                {parsedExercisePlan.map((section, index) => (
+                <AccordionItem value={`item-${index}`} key={`ex-${index}`}>
+                    <AccordionTrigger className="font-semibold font-headline text-lg">
+                    {section.title}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                        {section.content.map((line, lineIndex) => (
+                        <li key={lineIndex}>{line}</li>
+                        ))}
+                    </ul>
+                    </AccordionContent>
+                </AccordionItem>
+                ))}
+            </Accordion>
+            </CardContent>
+        </Card>
+
+        <Card>
+            <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Apple className="text-accent" />
+                Diet Plan
+            </CardTitle>
+            </CardHeader>
+            <CardContent>
+             <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
+                {parsedDietPlan.map((section, index) => (
+                <AccordionItem value={`item-${index}`} key={`diet-${index}`}>
+                    <AccordionTrigger className="font-semibold font-headline text-lg">
+                    {section.title}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                    <ul className="list-disc pl-5 space-y-2 text-muted-foreground">
+                        {section.content.map((line, lineIndex) => (
+                        <li key={lineIndex}>{line}</li>
+                        ))}
+                    </ul>
+                    </AccordionContent>
+                </AccordionItem>
+                ))}
+            </Accordion>
+            </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>
