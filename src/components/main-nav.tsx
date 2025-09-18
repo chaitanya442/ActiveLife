@@ -7,11 +7,13 @@ import {
   LayoutDashboard,
   ClipboardList,
   FileText,
+  TrendingUp,
 } from "lucide-react";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "My Plan", href: "/plan", icon: ClipboardList },
+  { name: "Progress", href: "/progress", icon: TrendingUp },
   { name: "Onboarding", href: "/onboarding", icon: FileText },
 ];
 
