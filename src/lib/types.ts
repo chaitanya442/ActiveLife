@@ -1,5 +1,6 @@
 
 export interface OnboardingData {
+  planName?: string;
   age: number;
   sex: "male" | "female" | "other";
   height: number;
@@ -20,4 +21,12 @@ export interface ExercisePlan {
   exercisePlan: string;
   dietPlan: string;
   safetyAdvice: string;
+}
+
+export interface StoredPlan {
+  id: string;
+  name: string;
+  createdAt: string;
+  onboarding: OnboardingData;
+  plan: ExercisePlan;
 }

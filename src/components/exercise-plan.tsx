@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 
-import { ExercisePlan as ExercisePlanType } from "@/lib/types";
+import { StoredPlan } from "@/lib/types";
 import {
   Accordion,
   AccordionContent,
@@ -35,8 +35,7 @@ import {
 
 
 interface ExercisePlanProps {
-  initialPlan: ExercisePlanType;
-  fitnessGoals: string;
+  storedPlan: StoredPlan;
   onDelete: () => void;
 }
 
@@ -67,13 +66,13 @@ const adjustmentFormSchema = z.object({
   userFeedback: z.string().min(10, "Please provide detailed feedback so we can make a better plan for you."),
 });
 
-export function ExercisePlan({ initialPlan, fitnessGoals, onDelete }: ExercisePlanProps) {
-  const [plan, setPlan] = useState<ExercisePlanType>(initialPlan);
+export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
+  const [currentPlan, setCurrentPlan] = useState(storedPlan);
   const [isAdjusting, setIsAdjusting] = useState(false);
   const { toast } = useToast();
   
-  const parsedExercisePlan = parseSection(plan.exercisePlan);
-  const parsedDietPlan = parseSection(plan.dietPlan);
+  const parsedExercisePlan = parseSection(currentPlan.plan.exercisePlan);
+  const parsedDietPlan = parseSection(currentPlan.plan.dietPlan);
 
   const form = useForm<{ userFeedback: string }>({
     resolver: zodResolver(adjustmentFormSchema),
@@ -85,10 +84,10 @@ export function ExercisePlan({ initialPlan, fitnessGoals, onDelete }: ExercisePl
     try {
         const result = await getAdjustedPlan({
           ...values,
-          workoutPlan: plan.exercisePlan,
-          dietPlan: plan.dietPlan,
+          workoutPlan: currentPlan.plan.exercisePlan,
+          dietPlan: currentPlan.plan.dietPlan,
           performanceData: "User is reporting feedback.",
-          fitnessGoals,
+          fitnessGoals: currentPlan.onboarding.fitnessGoals || "",
         });
 
         if (result.success && result.data) {
@@ -96,8 +95,16 @@ export function ExercisePlan({ initialPlan, fitnessGoals, onDelete }: ExercisePl
             title: "Plan Adjusted!",
             description: "Your workout and diet plan has been updated based on your feedback.",
           });
-          setPlan(result.data);
+          setCurrentPlan(prev => ({...prev, plan: result.data!}));
+          
+          // Also update session storage
+          const storedPlans = JSON.parse(sessionStorage.getItem('userPlans') || '[]');
+          const updatedPlans = storedPlans.map((p: StoredPlan) => 
+            p.id === currentPlan.id ? { ...p, plan: result.data } : p
+          );
+          sessionStorage.setItem('userPlans', JSON.stringify(updatedPlans));
           form.reset();
+
         } else {
           throw new Error(result.error || "Could not adjust the plan.");
         }
@@ -113,18 +120,11 @@ export function ExercisePlan({ initialPlan, fitnessGoals, onDelete }: ExercisePl
   };
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold font-headline mb-2">Your Personalized Plan</h1>
-        <p className="text-muted-foreground">
-          Here is your AI-generated fitness plan. Follow it closely and provide feedback to adjust.
-        </p>
-      </div>
-
+    <div className="space-y-8 pt-6">
       <Alert variant="destructive">
         <ShieldAlert className="h-4 w-4" />
         <AlertTitle>Important Safety Advice</AlertTitle>
-        <AlertDescription>{plan.safetyAdvice}</AlertDescription>
+        <AlertDescription>{currentPlan.plan.safetyAdvice}</AlertDescription>
       </Alert>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -242,14 +242,14 @@ export function ExercisePlan({ initialPlan, fitnessGoals, onDelete }: ExercisePl
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
-                            Delete and Create New Plan
+                            Delete This Plan
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action will permanently delete your current exercise and diet plan. You will be taken back to the beginning to generate a new one.
+                            This action will permanently delete your current exercise and diet plan. This cannot be undone.
                         </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

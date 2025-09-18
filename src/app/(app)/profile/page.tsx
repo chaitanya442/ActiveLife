@@ -18,9 +18,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import type { StoredPlan } from '@/lib/types';
 
 
-interface OnboardingData {
+interface ProfileData {
   age?: number;
   sex?: 'male' | 'female' | 'other';
   height?: number;
@@ -38,34 +39,45 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
+  const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const profileHeaderImage = placeholderImages.find((img) => img.id === 'profile-header');
 
   useEffect(() => {
-    const data = sessionStorage.getItem('onboardingData');
-    if (data) {
+    const plansData = sessionStorage.getItem('userPlans');
+    if (plansData) {
       try {
-        const parsedData = JSON.parse(data);
-        const { weight, height } = parsedData;
-        const bmi =
-            weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
-        setOnboardingData({ ...parsedData, bmi });
+        const plans: StoredPlan[] = JSON.parse(plansData);
+        if (plans.length > 0) {
+            // Use the most recent plan's data for profile display
+            const latestPlan = plans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+            const onboardingData = latestPlan.onboarding;
+            const { weight, height } = onboardingData;
+            const bmi =
+                weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
+            setProfileData({ ...onboardingData, bmi });
+        }
       } catch (e) {
-        console.error("Failed to parse onboarding data", e);
+        console.error("Failed to parse plans data", e);
       }
     }
   }, []);
 
-  const handleDataUpdate = (key: keyof OnboardingData, value: any) => {
-    const currentData = JSON.parse(sessionStorage.getItem('onboardingData') || '{}');
-    const updatedData = { ...currentData, [key]: value };
+  const handleDataUpdate = (key: keyof ProfileData, value: any) => {
+    // This function needs to be re-thought in a multi-plan context.
+    // For now, it will optimistically update the UI, but this change is not persisted
+    // in a way that affects future plan generation without a more complex storage update strategy.
     
-    sessionStorage.setItem('onboardingData', JSON.stringify(updatedData));
-    
-    // Recalculate BMI if weight or height changes
-    const { weight, height } = updatedData;
-    const bmi = weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
-    setOnboardingData({ ...updatedData, bmi });
+    setProfileData(prev => {
+        if (!prev) return null;
+        const updatedData = { ...prev, [key]: value };
+        const { weight, height } = updatedData;
+        const bmi = weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
+        return { ...updatedData, bmi };
+    });
+
+    // Note: To persist this change, we'd need to decide which plan to update,
+    // or if this should update a global user profile separate from plan-specific onboarding data.
+    // For now, this is a UI-only optimistic update.
   }
 
   if (!user) {
@@ -150,22 +162,23 @@ export default function ProfilePage() {
             <Card>
                 <CardHeader>
                     <CardTitle>Your Stats</CardTitle>
+                    <CardDescription>Based on your latest plan.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
-                    {onboardingData?.age && (
-                        <StatCard icon={<Calendar className="h-6 w-6 text-primary"/>} label="Age" value={onboardingData.age} dataKey="age" onUpdate={handleDataUpdate} />
+                    {profileData?.age && (
+                        <StatCard icon={<Calendar className="h-6 w-6 text-primary"/>} label="Age" value={profileData.age} dataKey="age" onUpdate={handleDataUpdate} />
                     )}
-                     {onboardingData?.sex && (
-                        <StatDisplayCard icon={getSexIcon(onboardingData.sex)} label="Sex" value={onboardingData.sex} />
+                     {profileData?.sex && (
+                        <StatDisplayCard icon={getSexIcon(profileData.sex)} label="Sex" value={profileData.sex} />
                     )}
-                    {onboardingData?.height && (
-                        <StatCard icon={<PersonStanding className="h-6 w-6 text-primary"/>} label="Height" value={`${onboardingData.height}`} unit="cm" dataKey="height" onUpdate={handleDataUpdate} />
+                    {profileData?.height && (
+                        <StatCard icon={<PersonStanding className="h-6 w-6 text-primary"/>} label="Height" value={`${profileData.height}`} unit="cm" dataKey="height" onUpdate={handleDataUpdate} />
                     )}
-                    {onboardingData?.weight && (
-                        <StatCard icon={<Weight className="h-6 w-6 text-primary"/>} label="Weight" value={`${onboardingData.weight}`} unit="kg" dataKey="weight" onUpdate={handleDataUpdate} />
+                    {profileData?.weight && (
+                        <StatCard icon={<Weight className="h-6 w-6 text-primary"/>} label="Weight" value={`${profileData.weight}`} unit="kg" dataKey="weight" onUpdate={handleDataUpdate} />
                     )}
-                     {onboardingData?.bmi && (
-                        <StatDisplayCard icon={<Heart className="h-6 w-6 text-primary"/>} label="BMI" value={onboardingData.bmi} />
+                     {profileData?.bmi && (
+                        <StatDisplayCard icon={<Heart className="h-6 w-6 text-primary"/>} label="BMI" value={profileData.bmi} />
                     )}
                 </CardContent>
             </Card>
@@ -181,7 +194,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-lg text-muted-foreground italic">
-                        {onboardingData?.fitnessGoals || "No goals have been set yet. Create a new plan to set your goals."}
+                        {profileData?.fitnessGoals || "No goals have been set yet. Create a new plan to set your goals."}
                     </p>
                 </CardContent>
             </Card>
@@ -206,8 +219,8 @@ interface StatCardProps {
     label: string;
     value: string | number;
     unit?: string;
-    dataKey: keyof OnboardingData;
-    onUpdate: (key: keyof OnboardingData, value: any) => void;
+    dataKey: keyof ProfileData;
+    onUpdate: (key: keyof ProfileData, value: any) => void;
 }
 
 const StatCard = ({ icon, label, value, unit, dataKey, onUpdate }: StatCardProps) => {

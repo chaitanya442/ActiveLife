@@ -28,6 +28,8 @@ import {
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { placeholderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
+import type { StoredPlan } from '@/lib/types';
+
 
 const chartData: { month: string, desktop: number | null }[] = [
   { month: 'January', desktop: null },
@@ -59,28 +61,28 @@ export default function DashboardPage() {
   const [hasChartData, setHasChartData] = useState(false);
 
   useEffect(() => {
-    const onboardingData = sessionStorage.getItem('onboardingData');
-    const planData = sessionStorage.getItem('generatedPlan');
-    
-    if (onboardingData) {
+    const plansData = sessionStorage.getItem('userPlans');
+    if (plansData) {
       try {
-        const { weight, height } = JSON.parse(onboardingData);
-        const bmi =
-          weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
-        setUserData(prev => ({ ...prev, weight, height, bmi }));
-        if (weight) {
-            // In a real app, you would fetch historical data.
-            // For now, we'll just populate one data point to show the chart.
-            chartData[chartData.length - 1].desktop = weight;
-            setHasChartData(true);
+        const plans: StoredPlan[] = JSON.parse(plansData);
+        if (plans.length > 0) {
+            // Use the most recent plan's data
+            const latestPlan = plans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+            const { weight, height } = latestPlan.onboarding;
+            const bmi =
+            weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
+            setUserData({ weight, height, bmi, hasPlan: true });
+
+            if (weight) {
+                // In a real app, you would fetch historical data.
+                // For now, we'll just populate one data point to show the chart.
+                chartData[chartData.length - 1].desktop = weight;
+                setHasChartData(true);
+            }
         }
       } catch (e) {
         console.error("Could not parse user data from session storage", e);
       }
-    }
-
-    if (planData) {
-      setUserData(prev => ({...prev, hasPlan: true}));
     }
   }, []);
 

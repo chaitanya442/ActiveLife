@@ -36,15 +36,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { generateNewPlan, getHighlightsFromPdf } from '@/app/actions/user-data';
 import { Loader2, Upload, FileText, Lightbulb } from 'lucide-react';
-import { ExercisePlan, OnboardingData } from '@/lib/types';
+import { ExercisePlan, OnboardingData, StoredPlan } from '@/lib/types';
 import { Label } from './ui/label';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 interface OnboardingFlowProps {
-  onPlanGenerated: (plan: ExercisePlan, data: OnboardingData) => void;
+  onPlanGenerated: (plan: StoredPlan) => void;
+  onCancel: () => void;
 }
 
 const step1Schema = z.object({
+  planName: z.string().min(3, "Plan name must be at least 3 characters long."),
+  fitnessGoals: z.string().min(10, "Please describe your goals in more detail."),
+});
+
+const step2Schema = z.object({
   age: z.coerce.number().min(16, "You must be at least 16 years old.").max(100),
   sex: z.enum(['male', 'female', 'other']),
   height: z.coerce.number().min(100, "Height must be in cm.").max(250),
@@ -53,14 +59,11 @@ const step1Schema = z.object({
   medicalPdf: z.string().optional(),
 });
 
-const step2Schema = z.object({
-  fitnessGoals: z.string().min(10, "Please describe your goals in more detail."),
-});
 
 type Step1Data = z.infer<typeof step1Schema>;
 type Step2Data = z.infer<typeof step2Schema>;
 
-export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
+export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isHighlighting, setIsHighlighting] = useState(false);
@@ -70,11 +73,12 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
 
   const step1Form = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
-    defaultValues: { age: '' as any, height: '' as any, weight: '' as any, medicalHistory: '' },
+    defaultValues: { planName: '', fitnessGoals: '' },
   });
 
   const step2Form = useForm<Step2Data>({
     resolver: zodResolver(step2Schema),
+    defaultValues: { age: '' as any, height: '' as any, weight: '' as any, medicalHistory: '' },
   });
 
   const onNextStep = () => setStep(2);
@@ -83,7 +87,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
     const file = event.target.files?.[0];
     setHighlights(null);
     setFileName(null);
-    step1Form.setValue('medicalPdf', undefined);
+    step2Form.setValue('medicalPdf', undefined);
 
     if (file) {
       if (file.type !== 'application/pdf') {
@@ -100,17 +104,17 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
       const reader = new FileReader();
       reader.onloadend = async () => {
         const dataUri = reader.result as string;
-        step1Form.setValue('medicalPdf', dataUri);
+        step2Form.setValue('medicalPdf', dataUri);
 
         try {
           const result = await getHighlightsFromPdf({ medicalPdf: dataUri });
           if (result.success && result.data) {
             setHighlights(result.data.highlights);
             // Auto-fill form fields
-            if (result.data.age) step1Form.setValue('age', result.data.age);
-            if (result.data.sex) step1Form.setValue('sex', result.data.sex);
-            if (result.data.height) step1Form.setValue('height', result.data.height);
-            if (result.data.weight) step1Form.setValue('weight', result.data.weight);
+            if (result.data.age) step2Form.setValue('age', result.data.age);
+            if (result.data.sex) step2Form.setValue('sex', result.data.sex);
+            if (result.data.height) step2Form.setValue('height', result.data.height);
+            if (result.data.weight) step2Form.setValue('weight', result.data.weight);
           } else {
             throw new Error(result.error || "Failed to get highlights.");
           }
@@ -132,16 +136,25 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
   const onFinalSubmit = async (values: Step2Data) => {
     setIsSubmitting(true);
     const step1Values = step1Form.getValues();
-    const finalData = { ...step1Values, ...values };
+    const finalData: OnboardingData = { ...step1Values, ...values };
 
     try {
       const result = await generateNewPlan(finalData);
       if (result.success && result.data) {
         toast({
-          title: 'Your Plan is Ready!',
-          description: "We've generated a personalized fitness plan for you.",
+          title: 'Your New Plan is Ready!',
+          description: `We've generated the "${finalData.planName}" plan for you.`,
         });
-        onPlanGenerated(result.data, finalData as OnboardingData);
+        
+        const newPlan: StoredPlan = {
+            id: crypto.randomUUID(),
+            name: finalData.planName!,
+            createdAt: new Date().toISOString(),
+            onboarding: finalData,
+            plan: result.data,
+        };
+        onPlanGenerated(newPlan);
+
       } else {
         throw new Error(result.error || 'Failed to generate plan.');
       }
@@ -166,10 +179,10 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-3xl">
-          Create Your Personalized Plan
+          Create a New Plan
         </CardTitle>
         <CardDescription>
-          Tell us a bit about yourself so our AI can create the perfect plan for you.
+          Follow these steps to generate a new, personalized fitness plan.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -186,9 +199,63 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
               <FormProvider {...step1Form}>
                 <Form {...step1Form}>
                   <form onSubmit={step1Form.handleSubmit(onNextStep)} className="space-y-6">
+                    <FormField
+                        control={step1Form.control}
+                        name="planName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Plan Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., 'Summer Shred', 'Bulking Season'" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    <FormField
+                      control={step1Form.control}
+                      name="fitnessGoals"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Your Fitness Goals</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              rows={5}
+                              placeholder="Describe what you want to achieve. e.g., 'I want to lose 5kg in the next 3 months and build muscle tone. I can only work out 3 times a week.'"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <CardFooter className="px-0 justify-between">
+                       <Button type="button" variant="outline" onClick={onCancel}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">Next</Button>
+                    </CardFooter>
+                  </form>
+                </Form>
+              </FormProvider>
+            </motion.div>
+          )}
+
+          {step === 2 && (
+            <motion.div
+              key="step2"
+              variants={formVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              transition={{ duration: 0.3 }}
+            >
+              <FormProvider {...step2Form}>
+                <Form {...step2Form}>
+                  <form onSubmit={step2Form.handleSubmit(onFinalSubmit)} className="space-y-6">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <FormField
-                        control={step1Form.control}
+                        control={step2Form.control}
                         name="age"
                         render={({ field }) => (
                           <FormItem>
@@ -201,7 +268,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                         )}
                       />
                       <FormField
-                        control={step1Form.control}
+                        control={step2Form.control}
                         name="sex"
                         render={({ field }) => (
                           <FormItem>
@@ -223,7 +290,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                         )}
                       />
                       <FormField
-                        control={step1Form.control}
+                        control={step2Form.control}
                         name="height"
                         render={({ field }) => (
                           <FormItem>
@@ -236,7 +303,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                         )}
                       />
                       <FormField
-                        control={step1Form.control}
+                        control={step2Form.control}
                         name="weight"
                         render={({ field }) => (
                           <FormItem>
@@ -250,7 +317,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                       />
                     </div>
                      <FormField
-                        control={step1Form.control}
+                        control={step2Form.control}
                         name="medicalHistory"
                         render={({ field }) => (
                           <FormItem>
@@ -294,44 +361,6 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                       )}
 
 
-                    <CardFooter className="px-0 justify-end">
-                      <Button type="submit">Next</Button>
-                    </CardFooter>
-                  </form>
-                </Form>
-              </FormProvider>
-            </motion.div>
-          )}
-
-          {step === 2 && (
-            <motion.div
-              key="step2"
-              variants={formVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              transition={{ duration: 0.3 }}
-            >
-              <FormProvider {...step2Form}>
-                <Form {...step2Form}>
-                  <form onSubmit={step2Form.handleSubmit(onFinalSubmit)} className="space-y-6">
-                    <FormField
-                      control={step2Form.control}
-                      name="fitnessGoals"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Your Fitness Goals</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              rows={5}
-                              placeholder="Describe what you want to achieve. e.g., 'I want to lose 5kg in the next 3 months and build muscle tone. I can only work out 3 times a week.'"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                     <CardFooter className="px-0 justify-between">
                       <Button variant="outline" onClick={() => setStep(1)}>
                         Back
