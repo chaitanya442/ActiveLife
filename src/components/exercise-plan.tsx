@@ -54,7 +54,7 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
 
   const form = useForm<AdjustmentFormData>({
     resolver: zodResolver(adjustmentSchema),
-    defaultValues: { userFeedback: "", performanceData: "Not specified" },
+    defaultValues: { userFeedback: "", performanceData: "" },
   });
 
   const onAdjustSubmit = async (data: AdjustmentFormData) => {
@@ -217,7 +217,7 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
                                 <FormLabel>Performance Data (Optional)</FormLabel>
                                 <FormControl>
                                     <Textarea
-                                        placeholder="e.g., 'I could only do 5 reps of squats. I was able to increase my bench press weight.'"
+                                        placeholder="Not specified. e.g., 'I could only do 5 reps of squats. I was able to increase my bench press weight.'"
                                         {...field}
                                     />
                                 </FormControl>
