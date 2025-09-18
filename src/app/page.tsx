@@ -9,9 +9,6 @@ import {
   HeartPulse,
   BrainCircuit,
   CheckCircle2,
-  Telescope,
-  Activity,
-  ShieldAlert,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -40,17 +37,17 @@ export default function Home() {
     },
   };
 
-  const getStartedLink = loading ? '#' : user ? '/dashboard' : '/onboarding';
+  const getStartedLink = loading ? '#' : user ? '/dashboard' : '/login';
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b">
         <Logo />
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-2 sm:gap-4">
           {loading ? null : user ? (
             <Button asChild>
               <Link href="/dashboard">
-                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4 hidden sm:inline" />
               </Link>
             </Button>
           ) : (
@@ -59,8 +56,8 @@ export default function Home() {
                 <Link href="/login">Login</Link>
               </Button>
               <Button asChild>
-                <Link href="/onboarding">
-                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                <Link href={getStartedLink}>
+                  Get Started
                 </Link>
               </Button>
             </>
@@ -68,10 +65,10 @@ export default function Home() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
+        <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
+            <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-24 items-center">
+              <div className="flex flex-col justify-center space-y-4 text-center lg:text-left">
                 <motion.div
                   initial="initial"
                   whileInView="enter"
@@ -91,15 +88,15 @@ export default function Home() {
                   </motion.h1>
                   <motion.p
                     variants={FADE_IN_ANIMATION_SETTINGS}
-                    className="max-w-[600px] text-muted-foreground md:text-xl"
+                    className="max-w-[600px] text-muted-foreground mx-auto lg:mx-0 md:text-xl"
                   >
                     ActiveLife creates truly personalized workout plans based on
-                    your unique physiology, goals, and medical history.
+                    your unique physiology, goals, and medical history. Stop guessing, start training smarter.
                   </motion.p>
                 </motion.div>
                 <motion.div
                     variants={FADE_IN_ANIMATION_SETTINGS}
-                    className="flex flex-col gap-2 min-[400px]:flex-row"
+                    className="flex flex-col gap-2 min-[400px]:flex-row justify-center lg:justify-start"
                 >
                   <Button size="lg" asChild>
                     <Link href={getStartedLink}>
@@ -116,7 +113,7 @@ export default function Home() {
                     height={400}
                     alt="Hero"
                     data-ai-hint={heroImage.imageHint}
-                    className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
+                    className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full"
                   />
                 </motion.div>
               )}
@@ -124,11 +121,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32">
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-secondary/60">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">
+                <div className="inline-block rounded-lg bg-primary/20 text-primary px-3 py-1 text-sm font-medium">
                   Key Features
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
@@ -182,11 +179,13 @@ const FeatureCard = ({
   title: string;
   description: string;
 }) => (
-  <div className="grid gap-2">
-    <div className="flex items-center gap-4">
-      {icon}
-      <h3 className="text-xl font-bold font-headline">{title}</h3>
+  <div className="grid gap-2 text-center md:text-left items-center md:flex md:items-start md:gap-4">
+    <div className="mx-auto md:mx-0 bg-primary/10 p-3 rounded-full">
+        {icon}
     </div>
-    <p className="text-muted-foreground">{description}</p>
+    <div className="grid gap-1">
+      <h3 className="text-xl font-bold font-headline">{title}</h3>
+      <p className="text-muted-foreground">{description}</p>
+    </div>
   </div>
 );
