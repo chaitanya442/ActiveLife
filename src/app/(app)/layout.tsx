@@ -70,10 +70,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <AnimatePresence mode="wait">
             <motion.div
               key={router.asPath}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
             >
               {children}
             </motion.div>
