@@ -60,7 +60,7 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
   const onAdjustSubmit = async (data: AdjustmentFormData) => {
     setIsAdjusting(true);
 
-    if (!Array.isArray(currentPlan.plan.exercisePlan)) {
+    if (!Array.isArray(currentPlan.plan.exercisePlan) || typeof currentPlan.plan.dietPlan === 'string') {
         toast({
             variant: "destructive",
             title: "Adjustment Failed",
@@ -241,14 +241,14 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
        </Card>
 
       <Card>
-          <CardHeader>
+        <CardHeader>
             <div className="flex items-center gap-2">
               <AlertTriangle className="text-destructive"/>
               <CardTitle>Danger Zone</CardTitle>
             </div>
             <CardDescription>
                 If you want to start over, you can delete this plan. This action cannot be undone.
-            </cardDescription>
+            </CardDescription>
             </CardHeader>
             <CardContent>
                  <AlertDialog>
