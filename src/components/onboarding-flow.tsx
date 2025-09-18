@@ -106,6 +106,11 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
           const result = await getHighlightsFromPdf({ medicalPdf: dataUri });
           if (result.success && result.data) {
             setHighlights(result.data.highlights);
+            // Auto-fill form fields
+            if (result.data.age) step1Form.setValue('age', result.data.age);
+            if (result.data.sex) step1Form.setValue('sex', result.data.sex);
+            if (result.data.height) step1Form.setValue('height', result.data.height);
+            if (result.data.weight) step1Form.setValue('weight', result.data.weight);
           } else {
             throw new Error(result.error || "Failed to get highlights.");
           }
@@ -201,7 +206,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Sex</FormLabel>
-                             <Select onValueChange={field.onChange} defaultValue={field.value}>
+                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                                 <FormControl>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select your sex" />
@@ -273,7 +278,7 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                                 ) : (
                                     <>
                                         <Upload className="h-4 w-4" />
-                                        {fileName ? `Selected: ${fileName}` : 'Upload PDF'}
+                                        {fileName ? `Selected: ${fileName}` : 'Upload PDF & Auto-fill'}
                                     </>
                                 )}
                            </Label>
