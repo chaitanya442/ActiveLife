@@ -99,24 +99,13 @@ export default function Home() {
                 </motion.div>
                 <motion.div
                     variants={FADE_IN_ANIMATION_SETTINGS}
-                    className="flex flex-col gap-4 min-[400px]:flex-row"
+                    className="flex flex-col gap-2 min-[400px]:flex-row"
                 >
-                  <div className='flex flex-col gap-2'>
-                    <div className="text-sm text-muted-foreground space-y-2">
-                        <p className="font-semibold text-foreground">Your Personal Prescription System:</p>
-                        <ul className="list-disc list-inside space-y-1">
-                            <li>Safe exercise plans based on medical history.</li>
-                            <li>Dynamic adjustments for intensity & duration.</li>
-                            <li>Performance monitoring via wearables.</li>
-                            <li>Progress tracking and safety alerts.</li>
-                        </ul>
-                    </div>
-                    <Button size="lg" asChild>
-                      <Link href={getStartedLink}>
-                        Generate Your Free Plan
-                      </Link>
-                    </Button>
-                  </div>
+                  <Button size="lg" asChild>
+                    <Link href={getStartedLink}>
+                      Generate Your Free Plan
+                    </Link>
+                  </Button>
                 </motion.div>
               </div>
               {heroImage && (
@@ -140,37 +129,37 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">
-                  The ActiveLife System
+                  Key Features
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                  Personalized Exercise Prescription
+                  Why ActiveLife?
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Our core mission is to build a tool that generates tailored workout programs based on medical history, ensuring a safe and effective fitness journey for every user.
+                  Our AI-powered platform understands your body and goals to create a plan that is safe, effective, and uniquely yours.
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-2 lg:max-w-none mt-12">
-                <FeatureCard
-                  icon={<Telescope className="h-8 w-8 text-primary" />}
-                  title="Risk Stratification"
-                  description="We use a combination of rules and machine learning models to analyze your medical history and assess potential risks, ensuring your plan is safe."
-                />
-                <FeatureCard
-                  icon={<Activity className="h-8 w-8 text-primary" />}
-                  title="Dynamic Adjustments"
-                  description="Your plan isn't static. It evolves with you. We dynamically adjust intensity and duration based on your feedback and progress."
-                />
-                <FeatureCard
-                  icon={<BrainCircuit className="h-8 w-8 text-primary" />}
-                  title="Performance Monitoring"
-                  description="Integrate with your favorite wearables to automatically track performance, giving our AI the data it needs to optimize your routine."
-                />
-                <FeatureCard
-                  icon={<ShieldAlert className="h-8 w-8 text-primary" />}
-                  title="Progress Tracking & Safety Alerts"
-                  description="Stay motivated with clear progress visualizations and receive timely alerts if any activity might conflict with your health profile."
-                />
+            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-4 mt-12">
+              <FeatureCard
+                icon={<HeartPulse className="h-8 w-8 text-primary" />}
+                title="Personalized Plans"
+                description="Workouts tailored to your medical history, fitness level, and goals."
+              />
+              <FeatureCard
+                icon={<BrainCircuit className="h-8 w-8 text-primary" />}
+                title="AI-Powered"
+                description="Leverages cutting-edge AI to analyze your data and optimize your plan."
+              />
+              <FeatureCard
+                icon={<Dumbbell className="h-8 w-8 text-primary" />}
+                title="Dynamic Adjustments"
+                description="Your plan adapts based on your feedback and performance."
+              />
+              <FeatureCard
+                icon={<CheckCircle2 className="h-8 w-8 text-primary" />}
+                title="Progress Tracking"
+                description="Visualize your journey and stay motivated with detailed progress reports."
+              />
             </div>
           </div>
         </section>
