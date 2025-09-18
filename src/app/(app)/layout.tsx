@@ -96,9 +96,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               animate="enter"
               exit="exit"
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              whileTap={{ scale: 0.98, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
             >
-              {children}
+                <div className="mx-auto w-full max-w-7xl">
+                    {children}
+                </div>
             </motion.div>
           </AnimatePresence>
         </main>
