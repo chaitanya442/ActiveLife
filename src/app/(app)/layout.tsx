@@ -8,7 +8,7 @@ import { MainNav } from "@/components/main-nav";
 import { UserNav } from "@/components/user-nav";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -61,6 +61,10 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col">
+              <SheetHeader className="sr-only">
+                <SheetTitle>Navigation Menu</SheetTitle>
+                <SheetDescription>Main navigation links for the application.</SheetDescription>
+              </SheetHeader>
               <nav className="grid gap-2 text-lg font-medium">
                 <Logo />
                 <MainNav />
