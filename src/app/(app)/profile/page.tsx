@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Edit, Target } from 'lucide-react';
 import { getAuth, signOut } from 'firebase/auth';
 
 interface OnboardingData {
@@ -19,6 +19,7 @@ interface OnboardingData {
   height?: number;
   weight?: number;
   fitnessGoals?: string;
+  bmi?: number;
 }
 
 export default function ProfilePage() {
@@ -30,7 +31,11 @@ export default function ProfilePage() {
     const data = sessionStorage.getItem('onboardingData');
     if (data) {
       try {
-        setOnboardingData(JSON.parse(data));
+        const parsedData = JSON.parse(data);
+        const { weight, height } = parsedData;
+        const bmi =
+            weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
+        setOnboardingData({ ...parsedData, bmi });
       } catch (e) {
         console.error("Failed to parse onboarding data", e);
       }
@@ -119,8 +124,15 @@ export default function ProfilePage() {
         {onboardingData && (
         <div className="lg:col-span-2 space-y-6">
             <Card>
-                <CardHeader>
-                    <CardTitle>Health & Fitness Data</CardTitle>
+                <CardHeader className="flex flex-row justify-between items-start">
+                    <div>
+                        <CardTitle>Health & Fitness Data</CardTitle>
+                        <CardDescription>This information is used to personalize your plan.</CardDescription>
+                    </div>
+                    <Button variant="outline" size="icon" onClick={() => router.push('/onboarding')}>
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Edit</span>
+                    </Button>
                 </CardHeader>
                 <CardContent className="space-y-4">
                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -139,6 +151,10 @@ export default function ProfilePage() {
                         <div className="space-y-2">
                             <Label>Weight</Label>
                             <Input value={onboardingData.weight ? `${onboardingData.weight} kg` : 'N/A'} disabled />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>BMI</Label>
+                            <Input value={onboardingData.bmi || 'N/A'} disabled />
                         </div>
                     </div>
                     <div className="space-y-2">
