@@ -1,5 +1,18 @@
 
 import type {NextConfig} from 'next';
+import runtimeDotenv from 'next-runtime-dotenv';
+
+const withConfig = runtimeDotenv({
+  public: [
+    'FIREBASE_API_KEY',
+    'FIREBASE_AUTH_DOMAIN',
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_STORAGE_BUCKET',
+    'FIREBASE_MESSAGING_SENDER_ID',
+    'FIREBASE_APP_ID',
+    'FIREBASE_MEASUREMENT_ID',
+  ]
+})
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -39,4 +52,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withConfig(nextConfig);
