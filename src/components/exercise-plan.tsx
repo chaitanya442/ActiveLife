@@ -67,7 +67,7 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
         <AlertDescription>{currentPlan.plan.safetyAdvice}</AlertDescription>
       </Alert>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
@@ -77,50 +77,39 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
                 </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[100px]">Day</TableHead>
-                                <TableHead>Focus</TableHead>
-                                <TableHead>Exercises</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {Array.isArray(currentPlan.plan.exercisePlan) ? (
-                                currentPlan.plan.exercisePlan.map((day) => (
-                                    <TableRow key={day.day}>
-                                        <TableCell className="font-medium">{day.day}</TableCell>
-                                        <TableCell>{day.focus}</TableCell>
-                                        <TableCell>
-                                            <ul className="list-disc pl-4 space-y-1">
-                                                {day.exercises.map(ex => (
-                                                    <li key={ex.name}>
-                                                        {ex.name}: {ex.sets} sets of {ex.reps} reps
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                             ) : (
-                                <TableRow>
-                                    <TableCell colSpan={3}>
-                                        <Alert variant="destructive">
-                                            <AlertTriangle className="h-4 w-4" />
-                                            <AlertTitle>Plan Data Corrupted</AlertTitle>
-                                            <AlertDescription>
-                                                This exercise plan is in an outdated format. Please delete it and create a new one.
-                                            </AlertDescription>
-                                        </Alert>
-                                    </TableCell>
-                                </TableRow>
-                             )}
-                        </TableBody>
-                    </Table>
+                    {Array.isArray(currentPlan.plan.exercisePlan) ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {currentPlan.plan.exercisePlan.map((day) => (
+                                <Card key={day.day} className="flex flex-col">
+                                    <CardHeader className="pb-4">
+                                        <CardTitle className="text-lg">{day.day}</CardTitle>
+                                        <CardDescription>{day.focus}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="flex-1">
+                                        <ul className="list-disc pl-4 space-y-2 text-sm">
+                                            {day.exercises.map(ex => (
+                                                <li key={ex.name}>
+                                                    <span className="font-semibold">{ex.name}</span>: {ex.sets} sets of {ex.reps} reps
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <Alert variant="destructive">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>Plan Data Corrupted</AlertTitle>
+                            <AlertDescription>
+                                This exercise plan is in an outdated format. Please delete it and create a new one.
+                            </AlertDescription>
+                        </Alert>
+                    )}
                 </CardContent>
             </Card>
         </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-8">
             <DietPieChart macros={currentPlan.plan.macros} />
         </div>
       </div>
