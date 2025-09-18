@@ -63,17 +63,6 @@ const step2Schema = z.object({
 type Step1Data = z.infer<typeof step1Schema>;
 type Step2Data = z.infer<typeof step2Schema>;
 
-// Function to create a simple hash from a string
-const simpleHash = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash |= 0; // Convert to 32bit integer
-    }
-    return 'pdf-' + hash.toString();
-};
-
 export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,9 +109,6 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
         const dataUri = reader.result as string;
         step2Form.setValue('medicalPdf', dataUri);
         
-        const pdfHash = simpleHash(dataUri);
-        const cachedResult = sessionStorage.getItem(pdfHash);
-
         const processPdfResult = (resultData: ExtractHighlightsOutput) => {
             if (resultData.highlights) {
                 setHighlights(resultData.highlights);
@@ -133,18 +119,10 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
             if (resultData.weight) step2Form.setValue('weight', resultData.weight);
         };
 
-        if (cachedResult) {
-            console.log("Using cached PDF analysis result.");
-            processPdfResult(JSON.parse(cachedResult));
-            setIsHighlighting(false);
-            return;
-        }
-
         try {
           const result = await getHighlightsFromPdf({ medicalPdf: dataUri });
           if (result.success && result.data) {
              processPdfResult(result.data);
-             sessionStorage.setItem(pdfHash, JSON.stringify(result.data));
           } else {
             throw new Error(result.error || "Failed to get highlights.");
           }
