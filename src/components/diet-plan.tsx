@@ -64,7 +64,7 @@ export function DietPlan({ dietPlan, macros }: DietPlanProps) {
             {dietPlan?.summary || "A balanced diet to support your fitness goals."}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-0">
         <DietPieChart macros={macros} />
       </CardContent>
       <CardFooter>
