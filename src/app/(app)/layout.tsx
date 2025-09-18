@@ -32,9 +32,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   const variants = {
-    hidden: { opacity: 0, x: -200, y: 0 },
+    hidden: { opacity: 0, x: 0, y: 20 },
     enter: { opacity: 1, x: 0, y: 0 },
-    exit: { opacity: 0, x: 0, y: -100 },
+    exit: { opacity: 0, x: 0, y: -20 },
   };
 
   return (
@@ -84,7 +84,8 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               initial="hidden"
               animate="enter"
               exit="exit"
-              transition={{ type: 'linear' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              whileTap={{ scale: 0.98, transition: { type: 'spring', stiffness: 400, damping: 20 } }}
             >
               {children}
             </motion.div>
