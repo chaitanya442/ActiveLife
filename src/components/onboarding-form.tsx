@@ -89,16 +89,32 @@ export function OnboardingForm() {
         return;
       }
       
-      pdfDataUri = await new Promise((resolve) => {
+      pdfDataUri = await new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onload = (e) => {
+            if (e.target && e.target.result) {
+                resolve(e.target.result as string);
+            } else {
+                reject(new Error("Failed to read file."));
+            }
+        };
+        reader.onerror = (e) => reject(new Error("File reading error."));
         reader.readAsDataURL(file);
       });
     }
+    
+    // Create a plain object for session storage without the file
+    const onboardingDataForStorage = {
+        age: values.age,
+        sex: values.sex,
+        height: values.height,
+        weight: values.weight,
+        fitnessGoals: values.fitnessGoals,
+    };
 
     const result = await generatePlan({
       ...values,
-      medicalHistory: undefined,
+      medicalHistory: undefined, // Don't send the file object to the server action
       pdfDataUri,
     });
     
@@ -109,9 +125,8 @@ export function OnboardingForm() {
         title: "Plan Generated!",
         description: "Redirecting you to your new plan...",
       });
-      // Store result in session storage to be picked up by the plan page
       sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
-      sessionStorage.setItem("onboardingData", JSON.stringify(values));
+      sessionStorage.setItem("onboardingData", JSON.stringify(onboardingDataForStorage));
       router.push("/plan");
     } else {
       toast({
@@ -213,8 +228,8 @@ export function OnboardingForm() {
 
             <FormField
               control={form.control}
-              name="medicalHistory"
-              render={({ field: { onChange, value, ...rest } }) => (
+      name="medicalHistory"
+      render={({ field: { onChange, ...rest } }) => (
                 <FormItem>
                   <FormLabel>Medical History (Optional PDF)</FormLabel>
                   <FormControl>

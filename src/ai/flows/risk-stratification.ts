@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import * as fs from 'fs/promises';
 
 const RiskStratificationInputSchema = z.object({
   medicalHistoryPdfDataUri: z
@@ -35,43 +34,24 @@ export async function riskStratification(input: RiskStratificationInput): Promis
   return riskStratificationFlow(input);
 }
 
-const extractMedicalDataTool = ai.defineTool({
-  name: 'extractMedicalData',
-  description: 'Extracts medical history data from a PDF file.',
-  inputSchema: z.object({
-    pdfDataUri: z.string().describe("PDF data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."),
-  }),
-  outputSchema: z.string(),
-}, async (input) => {
-  // Simulate extracting text from PDF.
-  const base64String = input.pdfDataUri.split(',')[1];
-  const pdfBuffer = Buffer.from(base64String, 'base64');
-
-  // In a real implementation, use a library like PDF.js to extract text.
-  const text = pdfBuffer.toString('utf-8');
-  return `Extracted medical data from PDF: ${text}`;
-});
-
 const prompt = ai.definePrompt({
   name: 'riskStratificationPrompt',
   input: {schema: RiskStratificationInputSchema},
   output: {schema: RiskStratificationOutputSchema},
-  tools: [extractMedicalDataTool],
   prompt: `You are a medical expert specializing in risk stratification for exercise plans.
 
-  Analyze the user's medical history and other provided data to assess their risk factors and identify any contraindications for exercise.
+  Analyze the user's medical history from the provided document and their other data to assess their risk factors and identify any contraindications for exercise.
 
-  First, use the extractMedicalData tool to extract the medical history from the PDF.
+  The user's medical history document is provided as a data URI.
+  Medical History: {{media url=medicalHistoryPdfDataUri}}
 
-  Then, consider the following information:
+  Consider the following information:
   - Age: {{{age}}}
   - Sex: {{{sex}}}
   - Height: {{{height}}} cm
   - Weight: {{{weight}}} kg
 
-  Provide a detailed risk assessment and list any contraindications for exercise.
-
-  Medical History: {{#tool_use 'extractMedicalData' pdfDataUri=medicalHistoryPdfDataUri}}{{result}}{{/tool_use}}`,
+  Provide a detailed risk assessment and list any contraindications for exercise. If the medical history document is empty or not provided, state that the assessment is based only on the user-provided data.`,
 });
 
 const riskStratificationFlow = ai.defineFlow(
