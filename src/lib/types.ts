@@ -28,9 +28,17 @@ export interface DailyExercise {
   }[];
 }
 
+export interface DetailedDietPlan {
+    summary: string;
+    breakfast: string[];
+    lunch: string[];
+    dinner: string[];
+    snacks: string[];
+}
+
 export interface ExercisePlan {
   exercisePlan: DailyExercise[] | string; // Allow for old string format
-  dietPlan: string;
+  dietPlan: DetailedDietPlan | string; // Allow for old string format
   macros?: { // Make macros optional
     carbs: number;
     protein: number;

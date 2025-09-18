@@ -40,10 +40,19 @@ const DailyExerciseSchema = z.object({
   })).describe('A list of exercises for the day.'),
 });
 
+// Define a more detailed diet plan schema
+const DietPlanSchema = z.object({
+    summary: z.string().describe("A general overview of the diet plan, including nutritional advice."),
+    breakfast: z.array(z.string()).describe("A list of healthy breakfast suggestions."),
+    lunch: z.array(z.string()).describe("A list of healthy lunch suggestions."),
+    dinner: z.array(z.string()).describe("A list of healthy dinner suggestions."),
+    snacks: z.array(z.string()).describe("A list of healthy snack suggestions."),
+});
+
 // Define the structured output schema for the entire plan
 const CreateExercisePlanOutputSchema = z.object({
   exercisePlan: z.array(DailyExerciseSchema).describe("A detailed, day-by-day exercise plan for one week, tailored to the user's data and goals. Ensure a full 7-day schedule, including rest days."),
-  dietPlan: z.string().describe("A general overview of the diet plan, including meal suggestions and nutritional advice."),
+  dietPlan: DietPlanSchema.describe("A structured diet plan with a summary and specific meal suggestions."),
   macros: z.object({
     carbs: z.number().describe("Percentage of daily calories from carbohydrates."),
     protein: z.number().describe("Percentage of daily calories from protein."),
@@ -83,8 +92,8 @@ const createPlanPrompt = ai.definePrompt({
   1.  **Risk Assessment**: First, analyze all provided data, including the user's medical history, age, other data, and the content of the attached medical document if provided.
   2.  **Generate Safety Advice**: Formulate a **brief and small summary (a few lines)** of the most critical safety advice and warnings based on a comprehensive review of all information. This is the most important step. If the user has significant health risks, the safety advice should be very prominent and clear but concise.
   3.  **Create Structured Exercise Plan**: Based on the user's goals and physical data, create a structured, day-by-day exercise plan for a full 7-day week. For each day, provide the focus (e.g., 'Upper Body', 'Cardio', 'Rest'), and a list of specific exercises with sets and reps. Format this as the 'exercisePlan' array in the output.
-  4.  **Create Diet Plan & Macros**: Create a general diet plan description with meal suggestions and nutritional advice. Also, provide a recommended daily macronutrient breakdown (carbs, protein, fat) as percentages. Ensure the percentages add up to 100.
-  5.  **Return Output**: Respond with the generated structured exercise plan, the diet plan text, the macronutrient breakdown, and the crucial safety advice in the specified JSON format.
+  4.  **Create Diet Plan & Macros**: Create a detailed, structured diet plan. Provide a general summary, and then lists of specific, healthy meal suggestions for breakfast, lunch, dinner, and snacks. Also, provide a recommended daily macronutrient breakdown (carbs, protein, fat) as percentages. Ensure the percentages add up to 100.
+  5.  **Return Output**: Respond with the generated structured exercise plan, the structured diet plan, the macronutrient breakdown, and the crucial safety advice in the specified JSON format.
   `,
 });
 

@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { DietPieChart } from "@/components/diet-pie-chart";
 import { StoredPlan, ExercisePlan } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -33,6 +32,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { DietPlan } from "./diet-plan";
 
 
 interface ExercisePlanProps {
@@ -132,10 +132,10 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
         <AlertTitle>Important Safety Advice</AlertTitle>
         <AlertDescription>{currentPlan.plan.safetyAdvice}</AlertDescription>
       </Alert>
-
+      
       <div className="grid lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-1 space-y-8">
-            <DietPieChart macros={currentPlan.plan.macros} />
+         <div className="lg:col-span-1 space-y-8">
+            <DietPlan dietPlan={currentPlan.plan.dietPlan} macros={currentPlan.plan.macros} />
         </div>
         <div className="lg:col-span-2">
             <Card>
@@ -248,7 +248,7 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
             </div>
             <CardDescription>
                 If you want to start over, you can delete this plan. This action cannot be undone.
-            </CardDescription>
+            </cardDescription>
             </CardHeader>
             <CardContent>
                  <AlertDialog>

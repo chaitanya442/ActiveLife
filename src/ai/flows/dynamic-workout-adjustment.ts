@@ -27,11 +27,19 @@ const DailyExerciseSchema = z.object({
   })).describe('A list of exercises for the day.'),
 });
 
+const DietPlanSchema = z.object({
+    summary: z.string().describe("A general overview of the diet plan, including nutritional advice."),
+    breakfast: z.array(z.string()).describe("A list of healthy breakfast suggestions."),
+    lunch: z.array(z.string()).describe("A list of healthy lunch suggestions."),
+    dinner: z.array(z.string()).describe("A list of healthy dinner suggestions."),
+    snacks: z.array(z.string()).describe("A list of healthy snack suggestions."),
+});
+
 
 // Define the input schema for the adjustWorkoutPlan function
 const AdjustWorkoutPlanInputSchema = z.object({
   exercisePlan: z.array(DailyExerciseSchema).describe('The current structured workout plan.'),
-  dietPlan: z.string().describe('The current diet plan text.'),
+  dietPlan: DietPlanSchema.describe('The current diet plan text.'),
   macros: z.object({
     carbs: z.number(),
     protein: z.number(),
@@ -46,7 +54,7 @@ export type AdjustWorkoutPlanInput = z.infer<typeof AdjustWorkoutPlanInputSchema
 
 const AdjustWorkoutPlanOutputSchema = z.object({
     adjustedExercisePlan: z.array(DailyExerciseSchema).describe("The adjusted, day-by-day exercise plan for one week."),
-    adjustedDietPlan: z.string().describe("The adjusted general overview of the diet plan."),
+    adjustedDietPlan: DietPlanSchema.describe("The adjusted general overview of the diet plan."),
     adjustedMacros: z.object({
         carbs: z.number().describe("The adjusted percentage of daily calories from carbohydrates."),
         protein: z.number().describe("The adjusted percentage of daily calories from protein."),
@@ -75,7 +83,10 @@ const adjustWorkoutPlanPrompt = ai.definePrompt({
   \`\`\`json
   {{{jsonStringify exercisePlan}}}
   \`\`\`
-  Current Diet Plan: {{{dietPlan}}}
+  Current Diet Plan: 
+  \`\`\`json
+  {{{jsonStringify dietPlan}}}
+  \`\`\`
   Current Macros: Carbs: {{{macros.carbs}}}%, Protein: {{{macros.protein}}}%, Fat: {{{macros.fat}}}%
   
   User Feedback: {{{userFeedback}}}
@@ -84,12 +95,12 @@ const adjustWorkoutPlanPrompt = ai.definePrompt({
 
   Based on the user feedback, performance data, and fitness goals, adjust the exercise plan, diet plan, and macronutrient breakdown.
   - For the exercise plan, consider intensity, volume, exercise selection, and rest periods. Return a full 7-day structured plan.
-  - For the diet plan, consider caloric intake, macronutrient distribution, and food preferences mentioned in the feedback.
+  - For the diet plan, consider caloric intake, macronutrient distribution, and food preferences mentioned in the feedback. Return a structured diet plan with a summary and meal suggestions.
   - For the macros, ensure the new percentages add up to 100.
 
   Ensure that the adjusted plans are safe, effective, and still aligned with the user's primary fitness goals.
 
-  Return the adjusted structured exercise plan, the adjusted diet plan text, the adjusted macros, and a clear explanation of the changes you made.
+  Return the adjusted structured exercise plan, the adjusted structured diet plan, the adjusted macros, and a clear explanation of the changes you made.
   `, 
 });
 
