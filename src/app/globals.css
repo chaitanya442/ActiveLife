@@ -82,17 +82,8 @@
     @apply border-border;
   }
   body {
-    @apply text-foreground;
+    @apply bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: linear-gradient(
-      -45deg,
-      hsl(var(--background)),
-      hsl(var(--secondary)),
-      hsl(var(--background)),
-      hsl(var(--accent) / 0.1)
-    );
-    background-size: 400% 400%;
-    animation: gradient-bg 15s ease infinite;
   }
 }
