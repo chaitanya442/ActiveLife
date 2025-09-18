@@ -68,6 +68,9 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
       </Alert>
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
+        <div className="lg:col-span-1 space-y-8">
+            <DietPieChart macros={currentPlan.plan.macros} />
+        </div>
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
@@ -108,9 +111,6 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
                     )}
                 </CardContent>
             </Card>
-        </div>
-        <div className="lg:col-span-1 space-y-8">
-            <DietPieChart macros={currentPlan.plan.macros} />
         </div>
       </div>
       
