@@ -86,21 +86,35 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {currentPlan.plan.exercisePlan.map((day) => (
-                                <TableRow key={day.day}>
-                                    <TableCell className="font-medium">{day.day}</TableCell>
-                                    <TableCell>{day.focus}</TableCell>
-                                    <TableCell>
-                                        <ul className="list-disc pl-4 space-y-1">
-                                            {day.exercises.map(ex => (
-                                                <li key={ex.name}>
-                                                    {ex.name}: {ex.sets} sets of {ex.reps} reps
-                                                </li>
-                                            ))}
-                                        </ul>
+                            {Array.isArray(currentPlan.plan.exercisePlan) ? (
+                                currentPlan.plan.exercisePlan.map((day) => (
+                                    <TableRow key={day.day}>
+                                        <TableCell className="font-medium">{day.day}</TableCell>
+                                        <TableCell>{day.focus}</TableCell>
+                                        <TableCell>
+                                            <ul className="list-disc pl-4 space-y-1">
+                                                {day.exercises.map(ex => (
+                                                    <li key={ex.name}>
+                                                        {ex.name}: {ex.sets} sets of {ex.reps} reps
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                             ) : (
+                                <TableRow>
+                                    <TableCell colSpan={3}>
+                                        <Alert variant="destructive">
+                                            <AlertTriangle className="h-4 w-4" />
+                                            <AlertTitle>Plan Data Corrupted</AlertTitle>
+                                            <AlertDescription>
+                                                This exercise plan is in an outdated format. Please delete it and create a new one.
+                                            </AlertDescription>
+                                        </Alert>
                                     </TableCell>
                                 </TableRow>
-                            ))}
+                             )}
                         </TableBody>
                     </Table>
                 </CardContent>
