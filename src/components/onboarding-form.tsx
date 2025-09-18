@@ -151,7 +151,6 @@ export function OnboardingForm() {
       });
     }
     
-    // Create a plain object for session storage without the file
     const onboardingDataForStorage = {
         age: values.age,
         sex: values.sex,
@@ -162,7 +161,7 @@ export function OnboardingForm() {
 
     const result = await generatePlan({
       ...values,
-      medicalHistory: undefined, // Don't send the file object to the server action
+      medicalHistory: undefined, 
       pdfDataUri,
     });
     
