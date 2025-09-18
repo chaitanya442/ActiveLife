@@ -12,6 +12,10 @@ import {
   adjustWorkoutPlan,
   AdjustWorkoutPlanInput,
 } from "@/ai/flows/dynamic-workout-adjustment";
+import {
+  extractUserDataFromPdf,
+  ExtractUserDataInput,
+} from "@/ai/flows/extract-user-data-from-pdf";
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
@@ -97,6 +101,24 @@ export async function getAdjustedPlan(data: AdjustmentData) {
     };
   } catch (error) {
     console.error("Error adjusting plan:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
+
+export async function extractDataFromPdf(pdfDataUri: string) {
+  try {
+    const input: ExtractUserDataInput = { pdfDataUri };
+    const result = await extractUserDataFromPdf(input);
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error("Error extracting data from PDF:", error);
     const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
     return {
       success: false,

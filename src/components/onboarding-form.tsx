@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { generatePlan } from "@/app/actions/user-data";
+import { generatePlan, extractDataFromPdf } from "@/app/actions/user-data";
 import { Loader2, Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
@@ -52,6 +52,7 @@ export function OnboardingForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
   const [fileName, setFileName] = useState("");
 
   const form = useForm<FormValues>({
@@ -65,6 +66,70 @@ export function OnboardingForm() {
     },
   });
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setFileName("");
+      return;
+    }
+
+    setFileName(file.name);
+
+    if (file.type !== "application/pdf") {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: "Please upload a PDF file.",
+      });
+      return;
+    }
+     if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: "Please upload a PDF smaller than 5MB.",
+      });
+      return;
+    }
+
+    setIsExtracting(true);
+    toast({ title: "Reading PDF...", description: "Extracting data from your document. Please wait." });
+
+    try {
+      const pdfDataUri = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onerror = (e) => reject(new Error("File reading error."));
+        reader.readAsDataURL(file);
+      });
+      
+      const result = await extractDataFromPdf(pdfDataUri);
+      
+      if (result.success && result.data) {
+        const { age, sex, height, weight } = result.data;
+        if (age) form.setValue("age", age);
+        if (sex) form.setValue("sex", sex);
+        if (height) form.setValue("height", height);
+        if (weight) form.setValue("weight", weight);
+        toast({
+          title: "Success!",
+          description: "We've pre-filled the form with the data found in your PDF.",
+        });
+      } else {
+        throw new Error(result.error || "Failed to extract data.");
+      }
+
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Could not read PDF",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+      });
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
 
@@ -72,25 +137,6 @@ export function OnboardingForm() {
     let pdfDataUri: string | undefined;
 
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please upload a PDF smaller than 5MB.",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      if (file.type !== "application/pdf") {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please upload a PDF file.",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-      
       pdfDataUri = await new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -185,7 +231,7 @@ export function OnboardingForm() {
                     <FormLabel>Sex</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -225,7 +271,7 @@ export function OnboardingForm() {
                       <Input type="number" placeholder="e.g. 75" {...field} />
                     </FormControl>
                     <FormMessage />
-                  </FormItem>
+                  </Item>
                 )}
               />
             </div>
@@ -233,27 +279,27 @@ export function OnboardingForm() {
             <FormItem>
               <FormLabel>Medical History (Optional PDF)</FormLabel>
               <FormControl>
-                <Button asChild variant="outline" className="w-full">
+                <Button asChild variant="outline" className="w-full" disabled={isExtracting}>
                   <label className="cursor-pointer flex items-center justify-center">
-                    <Upload className="mr-2 h-4 w-4" />
-                    {fileName || "Upload PDF"}
+                    {isExtracting ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    {isExtracting ? "Reading PDF..." : (fileName || "Upload PDF & Pre-fill Form")}
                     <Input
                       type="file"
                       className="hidden"
                       accept=".pdf"
-                      {...medicalHistoryRef}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        medicalHistoryRef.onChange(e);
-                        setFileName(file?.name || "");
-                      }}
+                      {...form.register("medicalHistory")}
+                      onChange={handleFileChange}
+                      disabled={isExtracting}
                     />
                   </label>
                 </Button>
               </FormControl>
               <FormDescription>
-                For the most accurate risk assessment, upload a PDF of your
-                medical history.
+                For the most accurate risk assessment, upload a PDF. We can try to pre-fill the form for you.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -277,7 +323,7 @@ export function OnboardingForm() {
                 </FormItem>
               )}
             />
-            <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
+            <Button type="submit" size="lg" disabled={isSubmitting || isExtracting} className="w-full">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
