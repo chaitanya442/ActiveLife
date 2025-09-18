@@ -22,8 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 import { generatePlan } from '@/app/actions/user-data';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { RiskAssessment } from '@/lib/types';
-import type { OnboardingData } from '@/lib/types';
+import type { RiskAssessment, OnboardingData } from '@/lib/types';
 
 const formSchema = z.object({
   fitnessGoals: z.string().min(10, "Please describe your fitness goals in at least 10 characters."),
@@ -46,7 +45,13 @@ export default function OnboardingGoalsPage() {
     const storedProgress = sessionStorage.getItem('onboardingProgress');
     if (storedProgress) {
       try {
-        setOnboardingProgress(JSON.parse(storedProgress));
+        const parsedData = JSON.parse(storedProgress);
+        // Basic validation
+        if (parsedData.userData && parsedData.riskAssessment) {
+          setOnboardingProgress(parsedData);
+        } else {
+          throw new Error("Incomplete data in session storage.");
+        }
       } catch (e) {
         toast({
           variant: 'destructive',
@@ -80,9 +85,13 @@ export default function OnboardingGoalsPage() {
     
     setIsSubmitting(true);
     try {
-      const result = await generatePlan({
+      const fullOnboardingData = {
         ...onboardingProgress.userData,
         fitnessGoals: values.fitnessGoals,
+      };
+
+      const result = await generatePlan({
+        ...fullOnboardingData,
         riskAssessment: onboardingProgress.riskAssessment.riskAssessment,
       });
 
@@ -92,21 +101,14 @@ export default function OnboardingGoalsPage() {
           description: 'Redirecting you to your new plan...',
         });
         
-        const finalData = {
+        const finalPlanData = {
             exercisePlan: result.data.exercisePlan,
             safetyAdvice: result.data.safetyAdvice,
-            riskAssessment: onboardingProgress.riskAssessment
         }
         
-        const combinedData = {
-          ...onboardingProgress.userData,
-          fitnessGoals: values.fitnessGoals,
-        };
+        sessionStorage.setItem('generatedPlan', JSON.stringify(finalPlanData));
+        sessionStorage.setItem('onboardingData', JSON.stringify(fullOnboardingData));
 
-        sessionStorage.setItem('generatedPlan', JSON.stringify(finalData));
-        sessionStorage.setItem('onboardingData', JSON.stringify(combinedData));
-
-        // Clean up progress
         sessionStorage.removeItem('onboardingProgress');
 
         router.push('/plan');

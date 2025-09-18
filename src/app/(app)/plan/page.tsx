@@ -4,23 +4,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ExercisePlan as ExercisePlanComponent } from "@/components/exercise-plan";
-import { ExercisePlan, RiskAssessment } from "@/lib/types";
+import { ExercisePlan } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-
-interface PlanData {
-  exercisePlan: string;
-  safetyAdvice: string;
-  riskAssessment: RiskAssessment;
-}
 
 interface OnboardingData {
     fitnessGoals: string;
 }
 
 export default function PlanPage() {
-  const [planData, setPlanData] = useState<PlanData | null>(null);
+  const [planData, setPlanData] = useState<ExercisePlan | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -34,7 +28,7 @@ export default function PlanPage() {
         const parsedPlan = JSON.parse(storedPlan);
         const parsedOnboarding = JSON.parse(storedOnboardingData);
 
-        if (parsedPlan.exercisePlan && parsedPlan.riskAssessment) {
+        if (parsedPlan.exercisePlan && parsedOnboarding.fitnessGoals) {
           setPlanData(parsedPlan);
           setOnboardingData(parsedOnboarding);
         } else {
@@ -77,15 +71,10 @@ export default function PlanPage() {
     );
   }
 
-  const fullPlan: ExercisePlan = {
-      exercisePlan: planData.exercisePlan,
-      safetyAdvice: planData.safetyAdvice
-  }
-
   return (
     <div className="max-w-4xl mx-auto">
       <ExercisePlanComponent 
-        initialPlan={fullPlan} 
+        initialPlan={planData} 
         fitnessGoals={onboardingData.fitnessGoals}
       />
     </div>

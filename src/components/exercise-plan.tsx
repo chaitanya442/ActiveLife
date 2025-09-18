@@ -1,10 +1,10 @@
+
 "use client";
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { motion, AnimatePresence } from "framer-motion";
 
 import { ExercisePlan as ExercisePlanType } from "@/lib/types";
 import {
@@ -28,7 +28,7 @@ interface ExercisePlanProps {
 }
 
 const parsePlan = (planText: string) => {
-  const sections = planText.split(/Week \d+:|Warm-up:|Cool-down:/i).filter(Boolean);
+  const sections = planText.split(/Week \d+:|Warm-up:|Cool-down:/i).filter(s => s.trim() !== "");
   const titles = planText.match(/Week \d+:|Warm-up:|Cool-down:/gi) || [];
 
   return titles.map((title, index) => ({
@@ -42,11 +42,11 @@ const parsePlan = (planText: string) => {
 };
 
 const adjustmentFormSchema = z.object({
-  userFeedback: z.string().min(10, "Please provide detailed feedback."),
+  userFeedback: z.string().min(10, "Please provide detailed feedback so we can make a better plan for you."),
 });
 
 export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
-  const [plan, setPlan] = useState(initialPlan);
+  const [plan, setPlan] = useState<ExercisePlanType>(initialPlan);
   const [isAdjusting, setIsAdjusting] = useState(false);
   const { toast } = useToast();
   
@@ -59,27 +59,32 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
 
   const onAdjustSubmit = async (values: { userFeedback: string }) => {
     setIsAdjusting(true);
-    const result = await getAdjustedPlan({
-      ...values,
-      workoutPlan: plan.exercisePlan,
-      performanceData: "User is reporting feedback.",
-      fitnessGoals,
-    });
-    setIsAdjusting(false);
+    try {
+        const result = await getAdjustedPlan({
+          ...values,
+          workoutPlan: plan.exercisePlan,
+          performanceData: "User is reporting feedback.",
+          fitnessGoals,
+        });
 
-    if (result.success && result.data) {
-      toast({
-        title: "Plan Adjusted!",
-        description: "Your workout plan has been updated based on your feedback.",
-      });
-      setPlan(result.data.exercisePlan);
-      form.reset();
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Adjustment Failed",
-        description: result.error || "Could not adjust the plan.",
-      });
+        if (result.success && result.data) {
+          toast({
+            title: "Plan Adjusted!",
+            description: "Your workout plan has been updated based on your feedback.",
+          });
+          setPlan(result.data);
+          form.reset();
+        } else {
+          throw new Error(result.error || "Could not adjust the plan.");
+        }
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Adjustment Failed",
+            description: error instanceof Error ? error.message : "An unexpected error occurred."
+        });
+    } finally {
+        setIsAdjusting(false);
     }
   };
 
@@ -106,7 +111,7 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="single" collapsible className="w-full" defaultValue="item-0">
             {parsedPlan.map((section, index) => (
               <AccordionItem value={`item-${index}`} key={index}>
                 <AccordionTrigger className="font-semibold font-headline text-lg">

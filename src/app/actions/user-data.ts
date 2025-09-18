@@ -89,7 +89,8 @@ export async function generatePlan(data: PlanGenerationData): Promise<{
       success: true,
       data: planResult,
     };
-  } catch (error) {
+  } catch (error)
+  {
     console.error("Error generating plan:", error);
     const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
     return {
