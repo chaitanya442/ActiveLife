@@ -69,14 +69,6 @@ export function OnboardingForm() {
     setIsSubmitting(true);
     
     try {
-      const onboardingDataForStorage = {
-          age: values.age,
-          sex: values.sex,
-          height: values.height,
-          weight: values.weight,
-          fitnessGoals: values.fitnessGoals,
-      };
-
       const result = await generatePlan(values);
 
       if (result.success && result.data) {
@@ -85,7 +77,7 @@ export function OnboardingForm() {
             description: "Redirecting you to your new plan...",
         });
         sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
-        sessionStorage.setItem("onboardingData", JSON.stringify(onboardingDataForStorage));
+        sessionStorage.setItem("onboardingData", JSON.stringify(values));
         router.push("/plan");
       } else {
         throw new Error(result.error || "There was a problem generating your plan.");
