@@ -74,14 +74,6 @@ const simpleHash = (str: string) => {
     return 'pdf-' + hash.toString();
 };
 
-const processPdfResult = (resultData: ExtractHighlightsOutput, form: any) => {
-    if (resultData.highlights) setHighlights(resultData.highlights);
-    if (resultData.age) form.setValue('age', resultData.age);
-    if (resultData.sex) form.setValue('sex', resultData.sex);
-    if (resultData.height) form.setValue('height', resultData.height);
-    if (resultData.weight) form.setValue('weight', resultData.weight);
-};
-
 export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -119,6 +111,14 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
       }
       setFileName(file.name);
       setIsHighlighting(true);
+      
+      const processPdfResult = (resultData: ExtractHighlightsOutput) => {
+        if (resultData.highlights) setHighlights(resultData.highlights);
+        if (resultData.age) step2Form.setValue('age', resultData.age);
+        if (resultData.sex) step2Form.setValue('sex', resultData.sex);
+        if (resultData.height) step2Form.setValue('height', resultData.height);
+        if (resultData.weight) step2Form.setValue('weight', resultData.weight);
+      };
 
       const reader = new FileReader();
       reader.onloadend = async () => {
@@ -130,7 +130,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
 
         if (cachedResult) {
             console.log("Using cached PDF analysis result.");
-            processPdfResult(JSON.parse(cachedResult), step2Form);
+            processPdfResult(JSON.parse(cachedResult));
             setIsHighlighting(false);
             return;
         }
@@ -138,7 +138,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
         try {
           const result = await getHighlightsFromPdf({ medicalPdf: dataUri });
           if (result.success && result.data) {
-             processPdfResult(result.data, step2Form);
+             processPdfResult(result.data);
              sessionStorage.setItem(pdfHash, JSON.stringify(result.data));
           } else {
             throw new Error(result.error || "Failed to get highlights.");
@@ -411,3 +411,5 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
     </Card>
   );
 }
+
+    
