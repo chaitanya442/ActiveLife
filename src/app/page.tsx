@@ -1,28 +1,21 @@
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, Dumbbell, HeartPulse, BrainCircuit } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import { placeholderImages } from "@/lib/placeholder-images";
-import Logo from "@/components/logo";
-import { getAuth } from "firebase/auth";
-import { app } from "@/lib/firebase";
-import { headers } from "next/headers";
+'use client';
 
-// This is a server component, so we can't use hooks.
-// We'll have to get creative to determine if the user is logged in.
-// A common pattern is to check for a session cookie, but Firebase JS SDK doesn't set one by default server-side.
-// For the scope of this app, we'll assume that if the app router is loaded, we can make a guess.
-// A more robust solution would use Firebase Admin SDK or a proper session management.
-// For now, let's keep it simple and just link to the appropriate pages.
-// We'll rely on the app layout to redirect if the user is not authenticated.
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, Dumbbell, HeartPulse, BrainCircuit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { placeholderImages } from '@/lib/placeholder-images';
+import Logo from '@/components/logo';
+import { useAuth } from '@/components/providers/auth-provider';
 
 export default function Home() {
-  const heroImage = placeholderImages.find((img) => img.id === "hero-1");
+  const { user, loading } = useAuth();
+  const heroImage = placeholderImages.find((img) => img.id === 'hero-1');
 
   const FADE_IN_ANIMATION_SETTINGS = {
     initial: { opacity: 0, y: 10 },
-    animate: "enter",
+    animate: 'enter',
     exit: { opacity: 0, y: 10 },
     variants: {
       enter: (i: number) => ({
@@ -31,27 +24,37 @@ export default function Home() {
         transition: {
           delay: i * 0.1,
           duration: 0.5,
-          ease: "easeOut",
+          ease: 'easeOut',
         },
       }),
     },
   };
+
+  const getStartedLink = loading ? '/login' : user ? '/dashboard' : '/onboarding';
 
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-16 flex items-center shadow-sm">
         <Logo />
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <Button variant="ghost" asChild>
-            <Link href="/login">
-              Login
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/onboarding">
-              Get Started <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          {loading ? null : user ? (
+            <Button asChild>
+              <Link href="/dashboard">
+                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/onboarding">
+                  Get Started <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </>
+          )}
         </nav>
       </header>
       <main className="flex-1">
@@ -70,30 +73,33 @@ export default function Home() {
                   }}
                   className="space-y-4"
                 >
-                  <h1
+                  <motion.h1
+                    variants={FADE_IN_ANIMATION_SETTINGS}
                     className="text-4xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline"
                   >
                     Your Personal AI Fitness Partner
-                  </h1>
-                  <p
+                  </motion.h1>
+                  <motion.p
+                    variants={FADE_IN_ANIMATION_SETTINGS}
                     className="max-w-[600px] text-muted-foreground md:text-xl"
                   >
                     ActiveLife creates truly personalized workout plans based on
                     your unique physiology, goals, and medical history.
-                  </p>
+                  </motion.p>
                 </motion.div>
-                <div
-                  className="flex flex-col gap-2 min-[400px]:flex-row"
+                <motion.div
+                    variants={FADE_IN_ANIMATION_SETTINGS}
+                    className="flex flex-col gap-2 min-[400px]:flex-row"
                 >
                   <Button size="lg" asChild>
-                    <Link href="/onboarding">
+                    <Link href={getStartedLink}>
                       Generate Your Free Plan
                     </Link>
                   </Button>
-                </div>
+                </motion.div>
               </div>
               {heroImage && (
-                <div>
+                <motion.div variants={FADE_IN_ANIMATION_SETTINGS}>
                   <Image
                     src={heroImage.imageUrl}
                     width={600}
@@ -102,7 +108,7 @@ export default function Home() {
                     data-ai-hint={heroImage.imageHint}
                     className="mx-auto aspect-video overflow-hidden rounded-xl object-cover sm:w-full lg:order-last"
                   />
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
@@ -110,9 +116,7 @@ export default function Home() {
 
         <section className="w-full py-12 md:py-24 lg:py-32 bg-card">
           <div className="container px-4 md:px-6">
-            <div
-              className="flex flex-col items-center justify-center space-y-4 text-center"
-            >
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">
                   Key Features
@@ -170,9 +174,7 @@ const FeatureCard = ({
   title: string;
   description: string;
 }) => (
-  <div
-    className="grid gap-2"
-  >
+  <div className="grid gap-2">
     <div className="flex items-center gap-4">
       {icon}
       <h3 className="text-xl font-bold font-headline">{title}</h3>
