@@ -291,7 +291,7 @@ export function OnboardingForm() {
                       type="file"
                       className="hidden"
                       accept=".pdf"
-                      {...form.register("medicalHistory")}
+                      {...medicalHistoryRef}
                       onChange={handleFileChange}
                       disabled={isExtracting}
                     />
