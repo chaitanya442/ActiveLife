@@ -128,7 +128,11 @@ const adjustWorkoutPlanFlow = ai.defineFlow(
     outputSchema: AdjustWorkoutPlanOutputSchema,
   },
   async input => {
-    const {output} = await adjustWorkoutPlanPrompt(input);
+    const {output} = await adjustWorkoutPlanPrompt({
+        ...input,
+        // @ts-ignore
+        jsonStringify: (obj: any) => JSON.stringify(obj, null, 2),
+    });
     return output!;
   }
 );

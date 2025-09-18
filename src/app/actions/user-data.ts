@@ -37,12 +37,24 @@ const DailyExerciseSchema = z.object({
   })),
 });
 
+const MealNutritionSchema = z.object({
+  calories: z.string(),
+  protein: z.string(),
+  carbs: z.string(),
+  fat: z.string(),
+});
+
+const MealSchema = z.object({
+  suggestions: z.array(z.string()),
+  nutrition: MealNutritionSchema,
+});
+
 const DietPlanSchema = z.object({
-    summary: z.string(),
-    breakfast: z.array(z.string()),
-    lunch: z.array(z.string()),
-    dinner: z.array(z.string()),
-    snacks: z.array(z.string()),
+  summary: z.string(),
+  breakfast: MealSchema,
+  lunch: MealSchema,
+  dinner: MealSchema,
+  snacks: z.array(z.string()),
 });
 
 const AdjustmentSchema = z.object({
