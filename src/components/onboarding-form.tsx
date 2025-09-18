@@ -146,7 +146,7 @@ export function OnboardingForm() {
               reject(new Error("Failed to read file."));
             }
           };
-          reader.onerror = (e) => reject(new Error("File reading error."));
+          reader.onerror = () => reject(new Error("File reading error."));
           reader.readAsDataURL(file);
         });
       } catch (error) {
@@ -171,32 +171,35 @@ export function OnboardingForm() {
       fitnessGoals: values.fitnessGoals,
     };
 
-    const result = await generatePlan({
-      ...values,
-      medicalHistory: undefined,
-      pdfDataUri,
-    });
+    try {
+        const result = await generatePlan({
+            ...values,
+            medicalHistory: undefined,
+            pdfDataUri,
+        });
 
-    setIsSubmitting(false);
-
-    if (result.success) {
-      toast({
-        title: "Plan Generated!",
-        description: "Redirecting you to your new plan...",
-      });
-      sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
-      sessionStorage.setItem(
-        "onboardingData",
-        JSON.stringify(onboardingDataForStorage)
-      );
-      router.push("/plan");
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description:
-          result.error || "There was a problem generating your plan.",
-      });
+        if (result.success) {
+            toast({
+                title: "Plan Generated!",
+                description: "Redirecting you to your new plan...",
+            });
+            sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
+            sessionStorage.setItem(
+                "onboardingData",
+                JSON.stringify(onboardingDataForStorage)
+            );
+            router.push("/plan");
+        } else {
+            throw new Error(result.error || "There was a problem generating your plan.");
+        }
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: error instanceof Error ? error.message : "An unexpected error occurred.",
+        });
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
