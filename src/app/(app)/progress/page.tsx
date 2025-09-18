@@ -19,6 +19,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ProgressChart } from '@/components/progress-chart';
+import { ProgressPieChart } from '@/components/progress-pie-chart';
+
+const workoutTypeData: { name: string, value: number, fill: string }[] = [
+    // Example data:
+    // { name: 'Cardio', value: 40, fill: 'hsl(var(--chart-1))' },
+    // { name: 'Strength', value: 50, fill: 'hsl(var(--chart-2))' },
+    // { name: 'Flexibility', value: 10, fill: 'hsl(var(--chart-3))' },
+];
+
+const muscleGroupData: { name: string, value: number, fill: string }[] = [
+    // Example data:
+    // { name: 'Legs', value: 30, fill: 'hsl(var(--chart-1))' },
+    // { name: 'Chest', value: 25, fill: 'hsl(var(--chart-2))' },
+    // { name: 'Back', value: 20, fill: 'hsl(var(--chart-3))' },
+    // { name: 'Arms', value: 15, fill: 'hsl(var(--chart-4))' },
+    // { name: 'Core', value: 10, fill: 'hsl(var(--chart-5))' },
+];
+
 
 export default function ProgressPage() {
   return (
@@ -40,6 +58,19 @@ export default function ProgressPage() {
             <ProgressChart />
         </CardContent>
       </Card>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <ProgressPieChart
+          data={workoutTypeData}
+          title="Workout Type Distribution"
+          description="A breakdown of your workout types."
+        />
+        <ProgressPieChart
+          data={muscleGroupData}
+          title="Muscle Group Focus"
+          description="A breakdown of the muscle groups you've trained."
+        />
+      </div>
 
 
       <Card>
