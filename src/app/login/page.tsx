@@ -107,10 +107,18 @@ export default function LoginPage() {
        // The useEffect hook will handle the redirect
     } catch (error: any) {
       console.error("Authentication error:", error);
+      let description = "An unexpected error occurred.";
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        description = "Invalid email or password. Please try again or sign up.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        description = "An account with this email already exists. Please sign in.";
+      } else {
+        description = error.message;
+      }
       toast({
         variant: "destructive",
         title: "Authentication Failed",
-        description: error.message || "An unexpected error occurred.",
+        description: description,
       });
     } finally {
       setIsSubmitting(false);
