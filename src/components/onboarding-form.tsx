@@ -137,18 +137,28 @@ export function OnboardingForm() {
     let pdfDataUri: string | undefined;
 
     if (file) {
-      pdfDataUri = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (e.target && e.target.result) {
-                resolve(e.target.result as string);
-            } else {
-                reject(new Error("Failed to read file."));
-            }
-        };
-        reader.onerror = (e) => reject(new Error("File reading error."));
-        reader.readAsDataURL(file);
-      });
+        try {
+            pdfDataUri = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (e.target && e.target.result) {
+                        resolve(e.target.result as string);
+                    } else {
+                        reject(new Error("Failed to read file."));
+                    }
+                };
+                reader.onerror = (e) => reject(new Error("File reading error."));
+                reader.readAsDataURL(file);
+            });
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "File Read Error",
+                description: error instanceof Error ? error.message : "Could not process the uploaded file."
+            });
+            setIsSubmitting(false);
+            return;
+        }
     }
     
     const onboardingDataForStorage = {
@@ -319,7 +329,7 @@ export function OnboardingForm() {
                     Be as specific as you can. What do you want to achieve?
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
+                </Item>
               )}
             />
             <Button type="submit" size="lg" disabled={isSubmitting || isExtracting} className="w-full">
