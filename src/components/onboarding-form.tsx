@@ -111,6 +111,7 @@ export function OnboardingForm() {
       });
       // Store result in session storage to be picked up by the plan page
       sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
+      sessionStorage.setItem("onboardingData", JSON.stringify(values));
       router.push("/plan");
     } else {
       toast({

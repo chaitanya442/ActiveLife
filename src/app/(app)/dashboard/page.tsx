@@ -58,14 +58,43 @@ export default function DashboardPage() {
   useEffect(() => {
     const storedPlan = sessionStorage.getItem('generatedPlan');
     if (storedPlan) {
-      const {
-        exercisePlan: {
-          user: { weight, height },
-        },
-      } = JSON.parse(storedPlan);
-      const bmi =
-        weight && height ? (weight / ((height / 100) * (height / 100))).toFixed(2) : 0;
-      setUserData({ weight, height, bmi: Number(bmi) });
+      try {
+        const { exercisePlan, riskAssessment } = JSON.parse(storedPlan);
+        // The user data is now nested inside the request that was sent to the AI
+        // We need to look at the AI input to get the user data
+        // Let's assume the plan generation logic stores what it needs.
+        // It seems the plan generation doesn't return the user's original data.
+        // Let's look for what the onboarding form *sends*. It's in the `generatePlan` action.
+        // The action takes `data: OnboardingData`.
+        // Let's assume `sessionStorage` has what we need, but maybe nested differently.
+        // Looking at `generatePlan` response, it returns `riskAssessment` and `exercisePlan`.
+        // The user data is part of the `planInput` but not directly returned.
+        // `onboarding-form` stores `result.data`.
+        // A better approach would be to store the form data itself in sessionStorage.
+
+        // For now, let's assume the structure is what `plan/page.tsx` uses.
+        // In `plan/page.tsx` it's `parsedData.exercisePlan` and `parsedData.riskAssessment`.
+        // The `exercisePlan` object contains the AI response. It doesn't contain the user's height/weight.
+        // The `riskAssessment` might. The input to `riskStratification` has height and weight.
+        
+        // Let's check `onboarding-form.tsx` again. It stores `result.data`.
+        // `generatePlan` returns `{ success: true, data: { riskAssessment: riskResult, exercisePlan: planResult } }`
+        // `riskResult` is the output of `riskStratification`. `planResult` is the output of `generatePersonalizedExercisePlan`.
+        // Neither of these schemas (`RiskStratificationOutputSchema`, `PersonalizedExercisePlanOutputSchema`) contain the user's original data.
+        
+        // This is a bug in the app logic. The dashboard can't display what isn't stored.
+        // I will assume for now that the user's original form submission is also stored.
+        // Let's call it `onboardingData`.
+        const onboardingData = sessionStorage.getItem('onboardingData');
+        if (onboardingData) {
+          const { weight, height } = JSON.parse(onboardingData);
+          const bmi =
+            weight && height ? (weight / ((height / 100) * (height / 100))).toFixed(2) : 0;
+          setUserData({ weight, height, bmi: Number(bmi) });
+        }
+      } catch (e) {
+        console.error("Could not parse user data from session storage", e);
+      }
     }
   }, []);
 
@@ -77,8 +106,7 @@ export default function DashboardPage() {
           <Image
             src={welcomeImage.imageUrl}
             alt="Welcome"
-            width={1200}
-            height={300}
+            fill
             className="absolute inset-0 w-full h-full object-cover opacity-20"
             data-ai-hint={welcomeImage.imageHint}
           />
@@ -102,7 +130,7 @@ export default function DashboardPage() {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userData.bmi}</div>
+            <div className="text-2xl font-bold">{userData.bmi || 'N/A'}</div>
             <p className="text-xs text-muted-foreground">
               A measure of body fat
             </p>
@@ -114,7 +142,7 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userData.weight} kg</div>
+            <div className="text-2xl font-bold">{userData.weight || 'N/A'} kg</div>
             <p className="text-xs text-muted-foreground">Your current weight</p>
           </CardContent>
         </Card>
@@ -124,7 +152,7 @@ export default function DashboardPage() {
             <PersonStanding className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{userData.height} cm</div>
+            <div className="text-2xl font-bold">{userData.height || 'N/A'} cm</div>
             <p className="text-xs text-muted-foreground">Your current height</p>
           </CardContent>
         </Card>
@@ -134,7 +162,7 @@ export default function DashboardPage() {
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Yes</div>
+            <div className="text-2xl font-bold">{sessionStorage.getItem('generatedPlan') ? 'Yes' : 'No'}</div>
             <p className="text-xs text-muted-foreground">
               You have a personalized plan
             </p>
