@@ -43,6 +43,7 @@ export async function extractHighlights(input: ExtractHighlightsInput): Promise<
 // Define the prompt for the highlight extraction
 const extractHighlightsPrompt = ai.definePrompt({
   name: 'extractHighlightsPrompt',
+  model: 'googleai/gemini-1.5-pro-latest',
   input: { schema: ExtractHighlightsInputSchema },
   output: { schema: ExtractHighlightsOutputSchema },
   prompt: `You are a medical assistant. Your task is to analyze the provided medical document and extract the most critical highlights and specific patient data.

@@ -43,6 +43,7 @@ export async function adjustWorkoutPlan(input: AdjustWorkoutPlanInput): Promise<
 // Define the prompt for workout plan adjustment
 const adjustWorkoutPlanPrompt = ai.definePrompt({
   name: 'adjustWorkoutPlanPrompt',
+  model: 'googleai/gemini-1.5-pro-latest',
   input: {schema: AdjustWorkoutPlanInputSchema},
   output: {schema: AdjustWorkoutPlanOutputSchema},
   prompt: `You are a personal trainer and nutritionist who adjusts workout and diet plans based on user feedback and performance.

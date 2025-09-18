@@ -47,6 +47,7 @@ export async function createExercisePlan(input: CreateExercisePlanInput): Promis
 // Define the prompt for the exercise plan creation
 const createPlanPrompt = ai.definePrompt({
   name: 'createPlanPrompt',
+  model: 'googleai/gemini-1.5-pro-latest',
   input: { schema: CreateExercisePlanInputSchema },
   output: { schema: CreateExercisePlanOutputSchema },
   prompt: `You are an expert fitness coach and medical advisor. Your task is to create a holistic fitness plan based on the user's data.
