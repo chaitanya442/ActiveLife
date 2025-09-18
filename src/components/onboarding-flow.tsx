@@ -34,10 +34,11 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { generateNewPlan } from '@/app/actions/user-data';
-import { Loader2, Upload } from 'lucide-react';
+import { generateNewPlan, getHighlightsFromPdf } from '@/app/actions/user-data';
+import { Loader2, Upload, FileText, Lightbulb } from 'lucide-react';
 import { ExercisePlan, OnboardingData } from '@/lib/types';
 import { Label } from './ui/label';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 interface OnboardingFlowProps {
   onPlanGenerated: (plan: ExercisePlan, data: OnboardingData) => void;
@@ -62,7 +63,9 @@ type Step2Data = z.infer<typeof step2Schema>;
 export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isHighlighting, setIsHighlighting] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
+  const [highlights, setHighlights] = useState<string | null>(null);
   const { toast } = useToast();
 
   const step1Form = useForm<Step1Data>({
@@ -76,8 +79,12 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
 
   const onNextStep = () => setStep(2);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    setHighlights(null);
+    setFileName(null);
+    step1Form.setValue('medicalPdf', undefined);
+
     if (file) {
       if (file.type !== 'application/pdf') {
         toast({
@@ -88,15 +95,31 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
         return;
       }
       setFileName(file.name);
+      setIsHighlighting(true);
+
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const dataUri = reader.result as string;
         step1Form.setValue('medicalPdf', dataUri);
+
+        try {
+          const result = await getHighlightsFromPdf({ medicalPdf: dataUri });
+          if (result.success && result.data) {
+            setHighlights(result.data.highlights);
+          } else {
+            throw new Error(result.error || "Failed to get highlights.");
+          }
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Analysis Failed",
+            description: error instanceof Error ? error.message : "Could not analyze the PDF."
+          });
+        } finally {
+          setIsHighlighting(false);
+        }
       };
       reader.readAsDataURL(file);
-    } else {
-        setFileName(null);
-        step1Form.setValue('medicalPdf', undefined);
     }
   };
 
@@ -239,14 +262,32 @@ export function OnboardingFlow({ onPlanGenerated }: OnboardingFlowProps) {
                       />
                       <div className="space-y-2">
                         <Label>Medical Document (Optional PDF)</Label>
-                        <Input id="pdf-upload" type="file" accept="application/pdf" className="hidden" onChange={handleFileChange} />
-                        <Button asChild variant="outline" className="w-full cursor-pointer">
+                        <Input id="pdf-upload" type="file" accept="application/pdf" className="hidden" onChange={handleFileChange} disabled={isHighlighting} />
+                        <Button asChild variant="outline" className="w-full cursor-pointer" disabled={isHighlighting}>
                            <Label htmlFor="pdf-upload" className="flex items-center gap-2 cursor-pointer">
-                                <Upload className="h-4 w-4" />
-                                {fileName ? `Selected: ${fileName}` : 'Upload PDF'}
+                                {isHighlighting ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        Analyzing Document...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload className="h-4 w-4" />
+                                        {fileName ? `Selected: ${fileName}` : 'Upload PDF'}
+                                    </>
+                                )}
                            </Label>
                         </Button>
                       </div>
+
+                      {highlights && (
+                        <Alert>
+                            <Lightbulb className="h-4 w-4" />
+                            <AlertTitle>Document Highlights</AlertTitle>
+                            <AlertDescription className="whitespace-pre-wrap">{highlights}</AlertDescription>
+                        </Alert>
+                      )}
+
 
                     <CardFooter className="px-0 justify-end">
                       <Button type="submit">Next</Button>

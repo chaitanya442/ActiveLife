@@ -12,6 +12,10 @@ import {
   createExercisePlan,
   CreateExercisePlanInput,
 } from "@/ai/flows/create-exercise-plan";
+import {
+  extractHighlights,
+  ExtractHighlightsInput,
+} from "@/ai/flows/extract-highlights-from-pdf";
 
 const PlanCreationSchema = z.object({
   age: z.number(),
@@ -30,8 +34,14 @@ const AdjustmentSchema = z.object({
   fitnessGoals: z.string(),
 });
 
+const HighlightsSchema = z.object({
+  medicalPdf: z.string(),
+});
+
+
 type AdjustmentData = z.infer<typeof AdjustmentSchema>;
 type PlanCreationData = z.infer<typeof PlanCreationSchema>;
+type HighlightsData = z.infer<typeof HighlightsSchema>;
 
 export async function getAdjustedPlan(data: AdjustmentData) {
   try {
@@ -70,6 +80,25 @@ export async function generateNewPlan(data: PlanCreationData) {
         };
     } catch (error) {
         console.error("Error generating new plan:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+        return {
+            success: false,
+            error: errorMessage,
+        };
+    }
+}
+
+export async function getHighlightsFromPdf(data: HighlightsData) {
+    try {
+        const validatedData = HighlightsSchema.parse(data);
+        const result = await extractHighlights(validatedData as ExtractHighlightsInput);
+
+        return {
+            success: true,
+            data: result,
+        };
+    } catch (error) {
+        console.error("Error extracting highlights:", error);
         const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
         return {
             success: false,
