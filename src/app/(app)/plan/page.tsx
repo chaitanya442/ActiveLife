@@ -14,19 +14,29 @@ interface PlanData {
   riskAssessment: RiskAssessment;
 }
 
+interface OnboardingData {
+    fitnessGoals: string;
+}
+
 export default function PlanPage() {
   const [planData, setPlanData] = useState<PlanData | null>(null);
+  const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     try {
       const storedPlan = sessionStorage.getItem("generatedPlan");
-      if (storedPlan) {
-        const parsedData = JSON.parse(storedPlan);
+      const storedOnboardingData = sessionStorage.getItem("onboardingData");
+
+      if (storedPlan && storedOnboardingData) {
+        const parsedPlan = JSON.parse(storedPlan);
+        const parsedOnboarding = JSON.parse(storedOnboardingData);
+
         // A simple check to see if the data looks right
-        if (parsedData.exercisePlan && parsedData.riskAssessment) {
-          setPlanData(parsedData);
+        if (parsedPlan.exercisePlan && parsedPlan.riskAssessment) {
+          setPlanData(parsedPlan);
+          setOnboardingData(parsedOnboarding);
         } else {
           router.push("/onboarding");
         }
@@ -49,7 +59,7 @@ export default function PlanPage() {
     );
   }
 
-  if (!planData) {
+  if (!planData || !onboardingData) {
     return (
       <div className="flex items-center justify-center h-full">
         <Card className="text-center">
@@ -71,7 +81,7 @@ export default function PlanPage() {
     <div className="max-w-4xl mx-auto">
       <ExercisePlanComponent 
         initialPlan={planData.exercisePlan} 
-        fitnessGoals={"User-defined goals"} // This should be passed properly in a real app
+        fitnessGoals={onboardingData.fitnessGoals}
       />
     </div>
   );

@@ -98,6 +98,7 @@ export default function OnboardingGoalsPage() {
         }
 
         sessionStorage.setItem('generatedPlan', JSON.stringify(finalData));
+        // Also save the combined onboarding data for the profile/dashboard page
         sessionStorage.setItem('onboardingData', JSON.stringify({...onboardingProgress.userData, fitnessGoals: values.fitnessGoals}));
 
         // Clean up progress

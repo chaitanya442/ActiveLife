@@ -53,48 +53,26 @@ export default function DashboardPage() {
     weight: 0,
     height: 0,
     bmi: 0,
+    hasPlan: false,
   });
 
   useEffect(() => {
-    const storedPlan = sessionStorage.getItem('generatedPlan');
-    if (storedPlan) {
+    const onboardingData = sessionStorage.getItem('onboardingData');
+    const planData = sessionStorage.getItem('generatedPlan');
+    
+    if (onboardingData) {
       try {
-        const { exercisePlan, riskAssessment } = JSON.parse(storedPlan);
-        // The user data is now nested inside the request that was sent to the AI
-        // We need to look at the AI input to get the user data
-        // Let's assume the plan generation logic stores what it needs.
-        // It seems the plan generation doesn't return the user's original data.
-        // Let's look for what the onboarding form *sends*. It's in the `generatePlan` action.
-        // The action takes `data: OnboardingData`.
-        // Let's assume `sessionStorage` has what we need, but maybe nested differently.
-        // Looking at `generatePlan` response, it returns `riskAssessment` and `exercisePlan`.
-        // The user data is part of the `planInput` but not directly returned.
-        // `onboarding-form` stores `result.data`.
-        // A better approach would be to store the form data itself in sessionStorage.
-
-        // For now, let's assume the structure is what `plan/page.tsx` uses.
-        // In `plan/page.tsx` it's `parsedData.exercisePlan` and `parsedData.riskAssessment`.
-        // The `exercisePlan` object contains the AI response. It doesn't contain the user's height/weight.
-        // The `riskAssessment` might. The input to `riskStratification` has height and weight.
-        
-        // Let's check `onboarding-form.tsx` again. It stores `result.data`.
-        // `generatePlan` returns `{ success: true, data: { riskAssessment: riskResult, exercisePlan: planResult } }`
-        // `riskResult` is the output of `riskStratification`. `planResult` is the output of `generatePersonalizedExercisePlan`.
-        // Neither of these schemas (`RiskStratificationOutputSchema`, `PersonalizedExercisePlanOutputSchema`) contain the user's original data.
-        
-        // This is a bug in the app logic. The dashboard can't display what isn't stored.
-        // I will assume for now that the user's original form submission is also stored.
-        // Let's call it `onboardingData`.
-        const onboardingData = sessionStorage.getItem('onboardingData');
-        if (onboardingData) {
-          const { weight, height } = JSON.parse(onboardingData);
-          const bmi =
-            weight && height ? (weight / ((height / 100) * (height / 100))).toFixed(2) : 0;
-          setUserData({ weight, height, bmi: Number(bmi) });
-        }
+        const { weight, height } = JSON.parse(onboardingData);
+        const bmi =
+          weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
+        setUserData(prev => ({ ...prev, weight, height, bmi }));
       } catch (e) {
         console.error("Could not parse user data from session storage", e);
       }
+    }
+
+    if (planData) {
+      setUserData(prev => ({...prev, hasPlan: true}));
     }
   }, []);
 
@@ -162,7 +140,7 @@ export default function DashboardPage() {
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{sessionStorage.getItem('generatedPlan') ? 'Yes' : 'No'}</div>
+            <div className="text-2xl font-bold">{userData.hasPlan ? 'Yes' : 'No'}</div>
             <p className="text-xs text-muted-foreground">
               You have a personalized plan
             </p>
