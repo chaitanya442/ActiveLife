@@ -29,13 +29,13 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 import { placeholderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 
-const chartData = [
-  { month: 'January', desktop: 186 },
-  { month: 'February', desktop: 305 },
-  { month: 'March', desktop: 237 },
-  { month: 'April', desktop: 73 },
-  { month: 'May', desktop: 209 },
-  { month: 'June', desktop: 214 },
+const chartData: { month: string, desktop: number | null }[] = [
+  { month: 'January', desktop: null },
+  { month: 'February', desktop: null },
+  { month: 'March', desktop: null },
+  { month: 'April', desktop: null },
+  { month: 'May', desktop: null },
+  { month: 'June', desktop: null },
 ];
 
 const chartConfig = {
@@ -56,6 +56,8 @@ export default function DashboardPage() {
     hasPlan: false,
   });
 
+  const [hasChartData, setHasChartData] = useState(false);
+
   useEffect(() => {
     const onboardingData = sessionStorage.getItem('onboardingData');
     const planData = sessionStorage.getItem('generatedPlan');
@@ -66,6 +68,12 @@ export default function DashboardPage() {
         const bmi =
           weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
         setUserData(prev => ({ ...prev, weight, height, bmi }));
+        if (weight) {
+            // In a real app, you would fetch historical data.
+            // For now, we'll just populate one data point to show the chart.
+            chartData[chartData.length - 1].desktop = weight;
+            setHasChartData(true);
+        }
       } catch (e) {
         console.error("Could not parse user data from session storage", e);
       }
@@ -154,50 +162,56 @@ export default function DashboardPage() {
             <CardTitle>Weight Progress</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <ChartContainer config={chartConfig} className="h-[250px]">
-              <AreaChart
-                accessibilityLayer
-                data={chartData}
-                margin={{
-                  left: 12,
-                  right: 12,
-                }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="month"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => value.slice(0, 3)}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent indicator="dot" />}
-                />
-                <defs>
-                  <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="var(--color-desktop)"
-                      stopOpacity={0.8}
+            {hasChartData ? (
+                <ChartContainer config={chartConfig} className="h-[250px]">
+                <AreaChart
+                    accessibilityLayer
+                    data={chartData}
+                    margin={{
+                    left: 12,
+                    right: 12,
+                    }}
+                >
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                    dataKey="month"
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tickFormatter={(value) => value.slice(0, 3)}
                     />
-                    <stop
-                      offset="95%"
-                      stopColor="var(--color-desktop)"
-                      stopOpacity={0.1}
+                    <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent indicator="dot" />}
                     />
-                  </linearGradient>
-                </defs>
-                <Area
-                  dataKey="desktop"
-                  type="natural"
-                  fill="url(#fillDesktop)"
-                  stroke="var(--color-desktop)"
-                  stackId="a"
-                />
-              </AreaChart>
-            </ChartContainer>
+                    <defs>
+                    <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                        offset="5%"
+                        stopColor="var(--color-desktop)"
+                        stopOpacity={0.8}
+                        />
+                        <stop
+                        offset="95%"
+                        stopColor="var(--color-desktop)"
+                        stopOpacity={0.1}
+                        />
+                    </linearGradient>
+                    </defs>
+                    <Area
+                    dataKey="desktop"
+                    type="natural"
+                    fill="url(#fillDesktop)"
+                    stroke="var(--color-desktop)"
+                    stackId="a"
+                    />
+                </AreaChart>
+                </ChartContainer>
+            ) : (
+                <div className="h-[250px] flex items-center justify-center text-muted-foreground">
+                    No weight data yet. Create a plan to start tracking.
+                </div>
+            )}
           </CardContent>
         </Card>
         <Card className="col-span-4 lg:col-span-3">
