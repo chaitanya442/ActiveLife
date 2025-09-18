@@ -16,9 +16,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
+import { ProgressChart } from '@/components/progress-chart';
 
 export default function ProgressPage() {
   return (
@@ -30,6 +30,17 @@ export default function ProgressPage() {
           Log Workout
         </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+            <CardTitle>Workout Frequency</CardTitle>
+            <CardDescription>A summary of your workout consistency over the last few months.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <ProgressChart />
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader>
