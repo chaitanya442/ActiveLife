@@ -1,8 +1,9 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, getRedirectResult } from "firebase/auth";
 import { googleProvider } from "@/lib/firebase";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,29 @@ export default function LoginPage() {
       router.push("/dashboard");
     }
   }, [user, loading, router]);
+  
+  useEffect(() => {
+    const auth = getAuth();
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          toast({
+            title: "Success!",
+            description: "You've been signed in.",
+          });
+          router.push("/dashboard");
+        }
+      })
+      .catch((error) => {
+        console.error("Authentication error on redirect:", error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Failed",
+          description: "Could not sign in with Google. Please try again.",
+        });
+      });
+  }, [router, toast]);
+
 
   const handleGoogleSignIn = async () => {
     const auth = getAuth();
@@ -62,13 +86,18 @@ export default function LoginPage() {
         description: "You've been signed in.",
       });
       router.push("/dashboard");
-    } catch (error) {
-      console.error("Authentication error:", error);
-      toast({
-        variant: "destructive",
-        title: "Authentication Failed",
-        description: "Could not sign in with Google. Please try again.",
-      });
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+        // Fallback to redirect method if popup is blocked or closed
+        await getAuth().signInWithRedirect(googleProvider);
+      } else {
+        console.error("Authentication error:", error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Failed",
+          description: "Could not sign in with Google. Please try again.",
+        });
+      }
     }
   };
 
@@ -227,4 +256,5 @@ export default function LoginPage() {
       </motion.div>
     </div>
   );
-}
+
+    
