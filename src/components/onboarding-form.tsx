@@ -40,7 +40,7 @@ const formSchema = z.object({
   }),
   height: z.coerce.number().min(50, "Please enter a valid height in cm."),
   weight: z.coerce.number().min(20, "Please enter a valid weight in kg."),
-  medicalHistory: z.any(),
+  medicalHistory: z.string().optional(),
   fitnessGoals: z
     .string()
     .min(10, "Please describe your fitness goals in at least 10 characters."),
@@ -79,6 +79,7 @@ export function OnboardingForm() {
       height: 170,
       weight: 70,
       fitnessGoals: "",
+      medicalHistory: "",
     },
   });
 
@@ -89,8 +90,6 @@ export function OnboardingForm() {
       setPdfDataUri(undefined);
       return;
     }
-
-    setFileName(file.name);
 
     if (file.type !== "application/pdf") {
       toast({
@@ -110,6 +109,7 @@ export function OnboardingForm() {
     }
 
     setIsExtracting(true);
+    setFileName(file.name);
     toast({ title: "Reading PDF...", description: "Extracting data from your document. Please wait." });
 
     try {
@@ -289,6 +289,7 @@ export function OnboardingForm() {
                       className="hidden"
                       accept=".pdf"
                       {...medicalHistoryRef}
+                      value={undefined}
                       onChange={handleFileChange}
                       disabled={isExtracting}
                     />
