@@ -17,6 +17,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const GoogleIcon = () => (
   <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48">
@@ -87,7 +88,6 @@ export default function LoginPage() {
       router.push("/dashboard");
     } catch (error: any) {
       if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
-        // Fallback to redirect method if popup is blocked or closed
         getAuth().signInWithRedirect(googleProvider);
       } else {
         console.error("Authentication error:", error);
@@ -132,16 +132,33 @@ export default function LoginPage() {
     }
   };
 
+  const textVariants = {
+    initial: { opacity: 0, y: -20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: 20 },
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary">
       <Card className="w-full max-w-lg mx-auto overflow-hidden">
         <CardHeader className="text-center px-8 pt-8">
           <Logo className="justify-center mb-4"/>
             <div className="min-h-[80px]">
-              <CardTitle className="text-3xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
-              <CardDescription className="text-base pt-2">
-                  {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
-              </CardDescription>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={isSignUp ? "signup" : "login"}
+                  variants={textVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
+                  transition={{ duration: 0.3 }}
+                >
+                  <CardTitle className="text-3xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
+                  <CardDescription className="text-base pt-2">
+                      {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
+                  </CardDescription>
+                </motion.div>
+              </AnimatePresence>
             </div>
         </CardHeader>
         <CardContent className="px-8 pb-8">
