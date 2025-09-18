@@ -3,7 +3,7 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { config } from "dotenv";
 
 // Load environment variables from .env.local
-config({ path: ".env.local" });
+config({ path: ".env" });
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
