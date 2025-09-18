@@ -28,9 +28,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { generatePlan } from "@/app/actions/user-data";
+import { performRiskAssessment } from "@/app/actions/user-data";
 import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 const formSchema = z.object({
@@ -41,46 +41,45 @@ const formSchema = z.object({
   height: z.coerce.number().min(50, "Please enter a valid height in cm."),
   weight: z.coerce.number().min(20, "Please enter a valid weight in kg."),
   medicalHistory: z.string().optional(),
-  fitnessGoals: z
-    .string()
-    .min(10, "Please describe your fitness goals in at least 10 characters."),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type OnboardingStep1Data = z.infer<typeof formSchema>;
 
 export function OnboardingForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<FormValues>({
+  const form = useForm<OnboardingStep1Data>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       age: 18,
       sex: undefined,
       height: 170,
       weight: 70,
-      fitnessGoals: "",
       medicalHistory: "",
     },
   });
   
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (values: OnboardingStep1Data) => {
     setIsSubmitting(true);
-    
     try {
-      const result = await generatePlan(values);
+      const result = await performRiskAssessment(values);
 
       if (result.success && result.data) {
         toast({
-            title: "Plan Generated!",
-            description: "Redirecting you to your new plan...",
+            title: "Step 1 Complete!",
+            description: "Now, let's set your goals.",
         });
-        sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
-        sessionStorage.setItem("onboardingData", JSON.stringify(values));
-        router.push("/plan");
+        
+        const onboardingProgress = {
+            userData: values,
+            riskAssessment: result.data.riskAssessment,
+        }
+        sessionStorage.setItem("onboardingProgress", JSON.stringify(onboardingProgress));
+        router.push("/onboarding/goals");
       } else {
-        throw new Error(result.error || "There was a problem generating your plan.");
+        throw new Error(result.error || "There was a problem performing the risk assessment.");
       }
     } catch (error) {
       toast({
@@ -97,8 +96,11 @@ export function OnboardingForm() {
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle className="font-headline text-3xl">
-          Tell Us About Yourself
+          Step 1: Health Information
         </CardTitle>
+        <CardDescription>
+          Tell us about yourself so we can assess your baseline health profile.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Alert variant="default" className="mb-6 bg-secondary">
@@ -202,33 +204,14 @@ export function OnboardingForm() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="fitnessGoals"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Fitness Goals</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="e.g., 'I want to lose 10kg in 3 months and build muscle definition.'"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Be as specific as you can. What do you want to achieve?
-                  </FormDescription>
-                  <FormMessage />
-                </Item>
-              )}
-            />
             <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating Your Plan...
+                  Analyzing...
                 </>
               ) : (
-                "Generate My Plan"
+                "Next: Set Your Goals"
               )}
             </Button>
           </motion.form>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -16,7 +17,7 @@ const navigation = [
   { name: "My Plan", href: "/plan", icon: ClipboardList },
   { name: "Progress", href: "/progress", icon: TrendingUp },
   { name: "Profile", href: "/profile", icon: User },
-  { name: "Onboarding", href: "/onboarding", icon: FileText },
+  { name: "New Plan", href: "/onboarding", icon: FileText },
 ];
 
 export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElement>) {
@@ -33,7 +34,7 @@ export function MainNav({ className, ...props }: React.HTMLAttributes<HTMLElemen
           href={item.href}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary w-full",
-            pathname === item.href && "bg-secondary text-primary font-semibold"
+            (pathname === item.href || (item.href === '/onboarding' && pathname.startsWith('/onboarding'))) && "bg-secondary text-primary font-semibold"
           )}
         >
           <item.icon className="h-4 w-4" />

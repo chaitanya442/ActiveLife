@@ -17,20 +17,19 @@ import {
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
-const OnboardingSchema = z.object({
+const OnboardingStep1Schema = z.object({
   age: z.coerce.number().min(18, "You must be at least 18 years old."),
   sex: z.enum(["male", "female", "other"]),
   height: z.coerce.number().min(1, "Height is required."),
   weight: z.coerce.number().min(1, "Weight is required."),
   medicalHistory: z.string().optional(),
-  fitnessGoals: z.string().min(10, "Please describe your fitness goals."),
 });
 
-type OnboardingData = z.infer<typeof OnboardingSchema>;
+type OnboardingStep1Data = z.infer<typeof OnboardingStep1Schema>;
 
-export async function generatePlan(data: OnboardingData) {
+export async function performRiskAssessment(data: OnboardingStep1Data) {
   try {
-    const validatedData = OnboardingSchema.parse(data);
+    const validatedData = OnboardingStep1Schema.parse(data);
 
     const riskInput: RiskStratificationInput = {
       age: validatedData.age,
@@ -41,6 +40,39 @@ export async function generatePlan(data: OnboardingData) {
     };
 
     const riskResult = await riskStratification(riskInput);
+    
+    return {
+      success: true,
+      data: {
+        riskAssessment: riskResult,
+      },
+    };
+  } catch (error) {
+    console.error("Error in risk assessment:", error);
+    const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
+
+
+const PlanGenerationSchema = z.object({
+  age: z.coerce.number(),
+  sex: z.enum(["male", "female", "other"]),
+  height: z.coerce.number(),
+  weight: z.coerce.number(),
+  medicalHistory: z.string().optional(),
+  fitnessGoals: z.string().min(10, "Please describe your fitness goals."),
+  riskAssessment: z.string(),
+});
+
+type PlanGenerationData = z.infer<typeof PlanGenerationSchema>;
+
+export async function generatePlan(data: PlanGenerationData) {
+  try {
+    const validatedData = PlanGenerationSchema.parse(data);
 
     const planInput: PersonalizedExercisePlanInput = {
       age: validatedData.age,
@@ -48,7 +80,7 @@ export async function generatePlan(data: OnboardingData) {
       height: validatedData.height,
       weight: validatedData.weight,
       medicalHistory: validatedData.medicalHistory || "",
-      riskAssessment: riskResult.riskAssessment,
+      riskAssessment: validatedData.riskAssessment,
       fitnessGoals: validatedData.fitnessGoals,
     };
 
@@ -60,7 +92,6 @@ export async function generatePlan(data: OnboardingData) {
     return {
       success: true,
       data: {
-        riskAssessment: riskResult,
         exercisePlan: planResult,
       },
     };
@@ -73,6 +104,7 @@ export async function generatePlan(data: OnboardingData) {
     };
   }
 }
+
 
 const AdjustmentSchema = z.object({
   workoutPlan: z.string(),
