@@ -52,7 +52,7 @@ const extractHighlightsPrompt = ai.definePrompt({
 
   Instructions:
   1.  **Extract Specific Data**: Carefully read the document and identify the following patient data points: age, sex, height (in cm), and weight (in kg). If a value is present, populate the corresponding field in the output. If not, leave it empty.
-  2.  **Summarize Highlights**: Identify key information such as diagnosed conditions, reported allergies, recent lab results, prescribed medications, and any specific warnings or advice from medical professionals. Summarize these points into a concise list of highlights for the 'highlights' field.
+  2.  **Summarize Highlights**: Identify key information such as diagnosed conditions, reported allergies, recent lab results, prescribed medications, and any specific warnings or advice from medical professionals. Summarize these points into a concise, bulleted list of highlights for the 'highlights' field.
   3.  **Return Output**: Respond with both the extracted data and the summary. If the document is empty or contains no relevant medical information, state that in the 'highlights' field and leave data fields empty.
   `,
 });
