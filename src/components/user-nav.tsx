@@ -16,6 +16,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import { LogOut, User as UserIcon, UserPlus } from "lucide-react";
+import Link from "next/link";
 
 export function UserNav() {
   const { user } = useAuth();
@@ -78,10 +79,12 @@ export function UserNav() {
               <span>Sign Up</span>
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem disabled>
-              <UserIcon className="mr-2 h-4 w-4" />
-              <span>Profile</span>
-            </DropdownMenuItem>
+            <Link href="/profile" passHref>
+              <DropdownMenuItem>
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+            </Link>
           )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
