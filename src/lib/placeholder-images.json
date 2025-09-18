@@ -1,3 +1,4 @@
+
 {
   "placeholderImages": [
     {
@@ -17,6 +18,12 @@
       "description": "An inspiring fitness image for the login page background.",
       "imageUrl": "https://picsum.photos/seed/login-bg/1080/1920",
       "imageHint": "fitness motivation"
+    },
+    {
+        "id": "profile-header",
+        "description": "An abstract, colorful background for the profile page header.",
+        "imageUrl": "https://picsum.photos/seed/profile-header/800/200",
+        "imageHint": "abstract gradient"
     }
   ]
 }
