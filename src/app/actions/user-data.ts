@@ -49,8 +49,13 @@ export async function generatePlan(data: OnboardingData) {
     const riskResult = await riskStratification(riskInput);
 
     const planInput: PersonalizedExercisePlanInput = {
-      ...validatedData,
+      age: validatedData.age,
+      sex: validatedData.sex,
+      height: validatedData.height,
+      weight: validatedData.weight,
+      medicalHistory: validatedData.medicalHistory || "",
       riskAssessment: riskResult.riskAssessment,
+      fitnessGoals: validatedData.fitnessGoals,
     };
 
     const planResult = await generatePersonalizedExercisePlan(planInput);
@@ -127,5 +132,3 @@ export async function extractDataFromPdf(pdfDataUri: string) {
     };
   }
 }
-
-    

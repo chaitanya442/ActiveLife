@@ -69,6 +69,7 @@ export function OnboardingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [pdfDataUri, setPdfDataUri] = useState<string | undefined>();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -85,6 +86,7 @@ export function OnboardingForm() {
     const file = event.target.files?.[0];
     if (!file) {
       setFileName("");
+      setPdfDataUri(undefined);
       return;
     }
 
@@ -111,8 +113,9 @@ export function OnboardingForm() {
     toast({ title: "Reading PDF...", description: "Extracting data from your document. Please wait." });
 
     try {
-      const pdfDataUri = await fileToDataUri(file);
-      const result = await extractDataFromPdf(pdfDataUri);
+      const dataUri = await fileToDataUri(file);
+      setPdfDataUri(dataUri);
+      const result = await extractDataFromPdf(dataUri);
 
       if (result.success && result.data) {
         const { age, sex, height, weight } = result.data;
@@ -142,13 +145,6 @@ export function OnboardingForm() {
     setIsSubmitting(true);
     
     try {
-      let pdfDataUri: string | undefined;
-      const file = values.medicalHistory?.[0];
-
-      if (file && file instanceof File) {
-        pdfDataUri = await fileToDataUri(file);
-      }
-
       const onboardingDataForStorage = {
           age: values.age,
           sex: values.sex,
