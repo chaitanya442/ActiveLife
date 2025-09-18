@@ -43,11 +43,11 @@ export async function extractHighlights(input: ExtractHighlightsInput): Promise<
 // Define the prompt for the highlight extraction
 const extractHighlightsPrompt = ai.definePrompt({
   name: 'extractHighlightsPrompt',
-  input: { schema: z.object({ medicalPdf: z.string().media() }) },
+  input: { schema: z.object({ medicalPdf: z.string() }) },
   output: { schema: ExtractHighlightsOutputSchema },
   prompt: `You are a medical assistant. Your task is to analyze the provided medical document and extract the most critical highlights and specific patient data.
 
-  Attached Medical Document: {{{media url=medicalPdf}}}
+  Attached Medical Document: {{media url=medicalPdf}}
 
   Instructions:
   1.  **Extract Specific Data**: Carefully read the document and identify the following patient data points: age, sex, height (in cm), and weight (in kg). If a value is present, populate the corresponding field in the output. If not, leave it empty.
