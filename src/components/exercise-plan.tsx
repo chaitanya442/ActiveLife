@@ -2,19 +2,12 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { DietPieChart } from "@/components/diet-pie-chart";
 import { StoredPlan } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { getAdjustedPlan } from "@/app/actions/user-data";
-import { Loader2, ShieldAlert, Wand2, Trash2, AlertTriangle, Dumbbell, Info } from "lucide-react";
+import { Loader2, ShieldAlert, Trash2, AlertTriangle, Dumbbell, Info } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +19,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 
 
 interface ExercisePlanProps {
@@ -34,30 +26,9 @@ interface ExercisePlanProps {
   onDelete: () => void;
 }
 
-const adjustmentFormSchema = z.object({
-  userFeedback: z.string().min(10, "Please provide detailed feedback so we can make a better plan for you."),
-});
 
 export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
   const [currentPlan, setCurrentPlan] = useState(storedPlan);
-  const [isAdjusting, setIsAdjusting] = useState(false);
-  const { toast } = useToast();
-
-  const form = useForm<{ userFeedback: string }>({
-    resolver: zodResolver(adjustmentFormSchema),
-    defaultValues: { userFeedback: "" },
-  });
-
-  const onAdjustSubmit = async (values: { userFeedback: string }) => {
-    setIsAdjusting(true);
-    // This functionality is temporarily disabled until the AI flow is updated
-    // for structured plan adjustments.
-    toast({
-        title: "Feature In Development",
-        description: "Adjusting structured plans is coming soon!",
-    });
-    setIsAdjusting(false);
-  };
 
   return (
     <div className="space-y-8 pt-6">
@@ -122,17 +93,17 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
           </AlertDescription>
       </Alert>
 
-      <Card className="border-destructive">
+      <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
                 <AlertTriangle />
                 Danger Zone
             </CardTitle>
+            <CardDescription>
+                If you want to start over, you can delete this plan. This action cannot be undone.
+            </CardDescription>
             </CardHeader>
             <CardContent>
-                <CardDescription className="mb-4">
-                    If you want to start over with a completely new set of goals or personal data, you can delete your current plan. This action cannot be undone.
-                </CardDescription>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button variant="destructive">
