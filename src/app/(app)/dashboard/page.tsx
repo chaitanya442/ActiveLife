@@ -142,7 +142,7 @@ export default function DashboardPage() {
           <CardContent>
             <div className="text-2xl font-bold">{userData.hasPlan ? 'Yes' : 'No'}</div>
             <p className="text-xs text-muted-foreground">
-              You have a personalized plan
+              {userData.hasPlan ? 'You have a personalized plan' : 'Create a new plan now'}
             </p>
           </CardContent>
         </Card>
@@ -197,14 +197,14 @@ export default function DashboardPage() {
             <div className="flex items-center space-x-4 rounded-md border p-4">
               <ClipboardList />
               <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium leading-none">View Plan</p>
+                <p className="text-sm font-medium leading-none">My Plan</p>
                 <p className="text-sm text-muted-foreground">
-                  Check your current workout schedule and advice.
+                  View, adjust, or create a new workout plan.
                 </p>
               </div>
               <Button asChild variant="outline" size="sm">
                 <Link href="/plan">
-                  View <ArrowRight className="ml-2 h-4 w-4" />
+                  Manage <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </div>

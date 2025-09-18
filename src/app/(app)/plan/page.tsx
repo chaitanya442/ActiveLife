@@ -2,43 +2,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { ExercisePlan as ExercisePlanComponent } from "@/components/exercise-plan";
-import { ExercisePlan } from "@/lib/types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { OnboardingFlow } from "@/components/onboarding-flow";
+import type { ExercisePlan, OnboardingData } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-
-interface OnboardingData {
-    fitnessGoals: string;
-}
 
 export default function PlanPage() {
   const [planData, setPlanData] = useState<ExercisePlan | null>(null);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     try {
       const storedPlan = sessionStorage.getItem("generatedPlan");
-      const storedOnboardingData = sessionStorage.getItem("onboardingData");
+      const storedOnboarding = sessionStorage.getItem("onboardingData");
 
-      if (storedPlan && storedOnboardingData) {
-        const parsedPlan = JSON.parse(storedPlan);
-        const parsedOnboarding = JSON.parse(storedOnboardingData);
-
-        if (parsedPlan.exercisePlan && parsedOnboarding.fitnessGoals) {
-          setPlanData(parsedPlan);
-          setOnboardingData(parsedOnboarding);
-        }
+      if (storedPlan) {
+        setPlanData(JSON.parse(storedPlan));
+      }
+      if (storedOnboarding) {
+        setOnboardingData(JSON.parse(storedOnboarding));
       }
     } catch (error) {
-      console.error("Failed to parse plan data from session storage", error);
+      console.error("Failed to parse data from session storage", error);
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, []);
+  
+  const handlePlanGenerated = (newPlan: ExercisePlan, newOnboardingData: OnboardingData) => {
+    setPlanData(newPlan);
+    setOnboardingData(newOnboardingData);
+    sessionStorage.setItem("generatedPlan", JSON.stringify(newPlan));
+    sessionStorage.setItem("onboardingData", JSON.stringify(newOnboardingData));
+  };
+
 
   if (loading) {
     return (
@@ -48,32 +46,20 @@ export default function PlanPage() {
     );
   }
 
-  if (!planData || !onboardingData) {
+  if (planData && onboardingData) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <Card className="text-center max-w-lg">
-            <CardHeader>
-                <CardTitle>No Plan Found</CardTitle>
-                <CardDescription>
-                    We couldn't find a generated plan in your session. Please note that the "New Plan" feature has been temporarily removed.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-sm text-muted-foreground">
-                    If you have generated a plan previously in this session, it will be displayed here.
-                </p>
-            </CardContent>
-        </Card>
+      <div className="max-w-4xl mx-auto">
+        <ExercisePlanComponent 
+          initialPlan={planData} 
+          fitnessGoals={onboardingData.fitnessGoals ?? ""}
+        />
       </div>
     );
   }
 
   return (
     <div className="max-w-4xl mx-auto">
-      <ExercisePlanComponent 
-        initialPlan={planData} 
-        fitnessGoals={onboardingData.fitnessGoals}
-      />
+        <OnboardingFlow onPlanGenerated={handlePlanGenerated} />
     </div>
   );
 }
