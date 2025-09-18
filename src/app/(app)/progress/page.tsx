@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -20,6 +21,9 @@ import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { ProgressChart } from '@/components/progress-chart';
 import { ProgressPieChart } from '@/components/progress-pie-chart';
+import type { StoredPlan } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import Link from 'next/link';
 
 const workoutTypeData: { name: string, value: number, fill: string }[] = [
     // Example data:
@@ -39,14 +43,78 @@ const muscleGroupData: { name: string, value: number, fill: string }[] = [
 
 
 export default function ProgressPage() {
+  const [plans, setPlans] = useState<StoredPlan[]>([]);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const storedPlans = sessionStorage.getItem("userPlans");
+      if (storedPlans) {
+        const parsedPlans: StoredPlan[] = JSON.parse(storedPlans);
+        const sortedPlans = parsedPlans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setPlans(sortedPlans);
+        if (sortedPlans.length > 0) {
+          setSelectedPlanId(sortedPlans[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse plans from session storage", error);
+    }
+  }, []);
+
+  const selectedPlan = plans.find(p => p.id === selectedPlanId);
+
+  if (plans.length === 0) {
+    return (
+        <Card className="text-center">
+            <CardHeader>
+                <CardTitle>No Plans to Track</CardTitle>
+                <CardDescription>You need to create a fitness plan before you can track your progress.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button asChild>
+                    <Link href="/plan">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Create a Plan
+                    </Link>
+                </Button>
+            </CardContent>
+        </Card>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold font-headline">Your Progress</h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Log Workout
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+            <h1 className="text-3xl font-bold font-headline">
+                {selectedPlan ? `Progress for "${selectedPlan.name}"` : 'Your Progress'}
+            </h1>
+            <p className="text-muted-foreground">Select a plan to view your progress and log workouts.</p>
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+             <Select
+                value={selectedPlanId ?? ""}
+                onValueChange={setSelectedPlanId}
+                disabled={plans.length === 0}
+            >
+                <SelectTrigger className="w-full sm:w-[200px]">
+                    <SelectValue placeholder="Select a plan" />
+                </SelectTrigger>
+                <SelectContent>
+                    {plans.map(plan => (
+                        <SelectItem key={plan.id} value={plan.id}>
+                            {plan.name}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            <Button disabled={!selectedPlan}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Log Workout
+            </Button>
+        </div>
       </div>
 
       <Card>
@@ -77,7 +145,7 @@ export default function ProgressPage() {
         <CardHeader>
           <CardTitle>Workout History</CardTitle>
           <CardDescription>
-            A log of your completed workouts and activities.
+            A log of your completed workouts and activities for this plan.
           </CardDescription>
         </CardHeader>
         <CardContent>
