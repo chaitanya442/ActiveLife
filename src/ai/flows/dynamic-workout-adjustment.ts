@@ -93,6 +93,10 @@ const adjustWorkoutPlanPrompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: AdjustWorkoutPlanInputSchema},
   output: {schema: AdjustWorkoutPlanOutputSchema},
+  helpers: {
+    jsonStringify: (obj: any) => JSON.stringify(obj, null, 2),
+  },
+  knownHelpersOnly: false,
   prompt: `You are a personal trainer and nutritionist who adjusts workout and diet plans based on user feedback and performance.
 
   Current Exercise Plan:
@@ -128,11 +132,7 @@ const adjustWorkoutPlanFlow = ai.defineFlow(
     outputSchema: AdjustWorkoutPlanOutputSchema,
   },
   async input => {
-    const {output} = await adjustWorkoutPlanPrompt({
-        ...input,
-        // @ts-ignore
-        jsonStringify: (obj: any) => JSON.stringify(obj, null, 2),
-    });
+    const {output} = await adjustWorkoutPlanPrompt(input);
     return output!;
   }
 );
