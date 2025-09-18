@@ -29,9 +29,9 @@ export interface DailyExercise {
 }
 
 export interface ExercisePlan {
-  exercisePlan: DailyExercise[];
+  exercisePlan: DailyExercise[] | string; // Allow for old string format
   dietPlan: string;
-  macros: {
+  macros?: { // Make macros optional
     carbs: number;
     protein: number;
     fat: number;

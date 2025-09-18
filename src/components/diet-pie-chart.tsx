@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Apple } from "lucide-react";
 
 interface DietPieChartProps {
-  macros: {
+  macros?: {
     carbs: number;
     protein: number;
     fat: number;
@@ -25,6 +25,10 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function DietPieChart({ macros }: DietPieChartProps) {
+  if (!macros) {
+    return null; // Don't render the chart if there's no macro data
+  }
+
   const chartData = Object.entries(macros).map(([name, value]) => ({
     name: chartConfig[name as keyof typeof chartConfig].label,
     value,
