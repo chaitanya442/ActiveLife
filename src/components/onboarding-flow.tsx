@@ -113,11 +113,21 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
       setIsHighlighting(true);
       
       const processPdfResult = (resultData: ExtractHighlightsOutput) => {
-        if (resultData.highlights) setHighlights(resultData.highlights);
-        if (resultData.age) step2Form.setValue('age', resultData.age);
-        if (resultData.sex) step2Form.setValue('sex', resultData.sex);
-        if (resultData.height) step2Form.setValue('height', resultData.height);
-        if (resultData.weight) step2Form.setValue('weight', resultData.weight);
+        if (resultData.highlights) {
+          setHighlights(resultData.highlights);
+        }
+        if (resultData.age) {
+          step2Form.setValue('age', resultData.age);
+        }
+        if (resultData.sex) {
+          step2Form.setValue('sex', resultData.sex);
+        }
+        if (resultData.height) {
+          step2Form.setValue('height', resultData.height);
+        }
+        if (resultData.weight) {
+          step2Form.setValue('weight', resultData.weight);
+        }
       };
 
       const reader = new FileReader();
