@@ -2,11 +2,11 @@
 "use client";
 
 import { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { DietPieChart } from "@/components/diet-pie-chart";
-import { StoredPlan, ExercisePlan, DailyExercise } from "@/lib/types";
+import { StoredPlan, ExercisePlan } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -242,10 +242,10 @@ export function ExercisePlan({ storedPlan, onDelete }: ExercisePlanProps) {
 
       <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertTriangle />
-                Danger Zone
-            </CardTitle>
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="text-destructive"/>
+              <CardTitle>Danger Zone</CardTitle>
+            </div>
             <CardDescription>
                 If you want to start over, you can delete this plan. This action cannot be undone.
             </CardDescription>

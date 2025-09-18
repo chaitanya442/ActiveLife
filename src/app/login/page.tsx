@@ -46,6 +46,12 @@ export default function LoginPage() {
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
+  
+  useEffect(() => {
+    if (!loading && user) {
+      router.push('/dashboard');
+    }
+  }, [user, loading, router]);
 
 
   const handleGoogleSignIn = async () => {
@@ -141,7 +147,7 @@ export default function LoginPage() {
             <Image
                 src={loginImage.imageUrl}
                 alt="Login background"
-                layout="fill"
+                fill
                 objectFit="cover"
                 data-ai-hint={loginImage.imageHint}
             />
@@ -216,7 +222,7 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting && !form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
+                {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
               </Button>
             </form>
           </Form>
@@ -253,5 +259,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-    
