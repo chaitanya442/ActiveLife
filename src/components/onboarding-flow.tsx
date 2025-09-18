@@ -80,7 +80,6 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
   const [isHighlighting, setIsHighlighting] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [highlights, setHighlights] = useState<string | null>(null);
-  const [placeholders, setPlaceholders] = useState<Partial<ExtractHighlightsOutput>>({});
 
   const { toast } = useToast();
 
@@ -100,13 +99,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
     const file = event.target.files?.[0];
     setHighlights(null);
     setFileName(null);
-    setPlaceholders({});
-    step2Form.setValue('medicalPdf', undefined);
-    step2Form.resetField('age');
-    step2Form.resetField('sex');
-    step2Form.resetField('height');
-    step2Form.resetField('weight');
-
+    step2Form.reset();
 
     if (file) {
       if (file.type !== 'application/pdf') {
@@ -132,15 +125,10 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
             if (resultData.highlights) {
                 setHighlights(resultData.highlights);
             }
-            const newPlaceholders: Partial<ExtractHighlightsOutput> = {};
-            if (resultData.age) newPlaceholders.age = resultData.age;
-            if (resultData.height) newPlaceholders.height = resultData.height;
-            if (resultData.weight) newPlaceholders.weight = resultData.weight;
-            setPlaceholders(newPlaceholders);
-
-            if (resultData.sex) {
-              step2Form.setValue('sex', resultData.sex);
-            }
+            if (resultData.age) step2Form.setValue('age', resultData.age);
+            if (resultData.sex) step2Form.setValue('sex', resultData.sex);
+            if (resultData.height) step2Form.setValue('height', resultData.height);
+            if (resultData.weight) step2Form.setValue('weight', resultData.weight);
         };
 
         if (cachedResult) {
@@ -301,7 +289,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
                           <FormItem>
                             <FormLabel>Age</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder={placeholders.age ? String(placeholders.age) : "e.g., 25"} {...field} />
+                              <Input type="number" placeholder="e.g., 25" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -336,7 +324,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
                           <FormItem>
                             <FormLabel>Height (cm)</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder={placeholders.height ? String(placeholders.height) : "e.g., 175"} {...field} />
+                              <Input type="number" placeholder="e.g., 175" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -349,7 +337,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
                           <FormItem>
                             <FormLabel>Weight (kg)</FormLabel>
                             <FormControl>
-                              <Input type="number" placeholder={placeholders.weight ? String(placeholders.weight) : "e.g., 70"} {...field} />
+                              <Input type="number" placeholder="e.g., 70" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
