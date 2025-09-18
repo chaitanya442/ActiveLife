@@ -49,30 +49,11 @@ export default function ProgressPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">2024-07-20</TableCell>
-                <TableCell>Full Body Strength</TableCell>
-                <TableCell>45 mins</TableCell>
-                <TableCell>
-                  <Badge>Completed</Badge>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">2024-07-18</TableCell>
-                <TableCell>Cardio - Running</TableCell>
-                <TableCell>30 mins</TableCell>
-                <TableCell>
-                  <Badge>Completed</Badge>
-                </TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">2024-07-16</TableCell>
-                <TableCell>Rest Day</TableCell>
-                <TableCell>-</TableCell>
-                <TableCell>
-                  <Badge variant="secondary">Rest</Badge>
-                </TableCell>
-              </TableRow>
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        No workout history yet.
+                    </TableCell>
+                </TableRow>
             </TableBody>
           </Table>
         </CardContent>
