@@ -1,6 +1,6 @@
 
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth as getFirebaseAuth, GoogleAuthProvider, browserSessionPersistence } from "firebase/auth";
+import { getAuth as getFirebaseAuth, GoogleAuthProvider, browserSessionPersistence, setPersistence } from "firebase/auth";
 import { config } from "dotenv";
 
 // Load environment variables from .env.local
@@ -17,14 +17,17 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getFirebaseAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
+let authInstance: ReturnType<typeof getFirebaseAuth> | null = null;
+
 const getAuth = () => {
-    const auth = getFirebaseAuth(app);
-    auth.setPersistence(browserSessionPersistence);
-    return auth;
+    if (!authInstance) {
+        const auth = getFirebaseAuth(app);
+        setPersistence(auth, browserSessionPersistence);
+        authInstance = auth;
+    }
+    return authInstance;
 }
 
-
-export { app, auth, googleProvider, getAuth };
+export { app, googleProvider, getAuth };
