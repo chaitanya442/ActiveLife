@@ -55,7 +55,7 @@ const fileToDataUri = (file: File): Promise<string> => {
       if (typeof reader.result === 'string') {
         resolve(reader.result);
       } else {
-        reject(new Error("Failed to read file."));
+        reject(new Error("Failed to read file as Data URI."));
       }
     };
     reader.onerror = (error) => reject(error);
@@ -136,6 +136,8 @@ export function OnboardingForm() {
         title: "Could not read PDF",
         description: error instanceof Error ? error.message : "An unknown error occurred.",
       });
+      setFileName("");
+      setPdfDataUri(undefined);
     } finally {
       setIsExtracting(false);
     }
