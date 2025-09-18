@@ -74,7 +74,7 @@ export default function PlanPage() {
   
   if (view === "CREATE") {
     return (
-        <div className="max-w-4xl mx-auto">
+        <div className="mx-auto w-full max-w-4xl">
             <OnboardingFlow onPlanGenerated={handlePlanGenerated} onCancel={handleCancelCreate} />
         </div>
     );
@@ -83,7 +83,7 @@ export default function PlanPage() {
   if (plans.length > 0 && activeTab) {
     const activePlan = plans.find(plan => plan.id === activeTab);
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
         <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold font-headline">My Plans</h1>
             <Button onClick={handleCreateNewClick}>
@@ -114,7 +114,7 @@ export default function PlanPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="mx-auto w-full max-w-4xl">
         <Card className="text-center">
             <CardHeader>
                 <CardTitle>No Plans Yet</CardTitle>
