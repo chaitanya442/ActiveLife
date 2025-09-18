@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/components/providers/auth-provider';
@@ -12,6 +12,13 @@ import { Label } from '@/components/ui/label';
 import { UserPlus, Edit, Target, Heart, PersonStanding, Weight, Calendar, Venus, Mars, WholeWord } from 'lucide-react';
 import { getAuth, signOut } from 'firebase/auth';
 import { placeholderImages } from '@/lib/placeholder-images';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+
 
 interface OnboardingData {
   age?: number;
@@ -22,9 +29,15 @@ interface OnboardingData {
   bmi?: number;
 }
 
+const updateSchema = z.object({
+    value: z.coerce.number().min(1, "Please enter a valid number."),
+});
+
+
 export default function ProfilePage() {
   const { user } = useAuth();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const profileHeaderImage = placeholderImages.find((img) => img.id === 'profile-header');
 
@@ -42,6 +55,18 @@ export default function ProfilePage() {
       }
     }
   }, []);
+
+  const handleDataUpdate = (key: keyof OnboardingData, value: any) => {
+    const currentData = JSON.parse(sessionStorage.getItem('onboardingData') || '{}');
+    const updatedData = { ...currentData, [key]: value };
+    
+    sessionStorage.setItem('onboardingData', JSON.stringify(updatedData));
+    
+    // Recalculate BMI if weight or height changes
+    const { weight, height } = updatedData;
+    const bmi = weight && height ? Number((weight / ((height / 100) * (height / 100))).toFixed(2)) : 0;
+    setOnboardingData({ ...updatedData, bmi });
+  }
 
   if (!user) {
     return null; // Or a loading spinner
@@ -128,19 +153,19 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="grid grid-cols-2 gap-4">
                     {onboardingData?.age && (
-                        <StatCard icon={<Calendar className="h-6 w-6 text-primary"/>} label="Age" value={onboardingData.age} />
+                        <StatCard icon={<Calendar className="h-6 w-6 text-primary"/>} label="Age" value={onboardingData.age} dataKey="age" onUpdate={handleDataUpdate} />
                     )}
                      {onboardingData?.sex && (
-                        <StatCard icon={getSexIcon(onboardingData.sex)} label="Sex" value={onboardingData.sex} />
+                        <StatDisplayCard icon={getSexIcon(onboardingData.sex)} label="Sex" value={onboardingData.sex} />
                     )}
                     {onboardingData?.height && (
-                        <StatCard icon={<PersonStanding className="h-6 w-6 text-primary"/>} label="Height" value={`${onboardingData.height} cm`} />
+                        <StatCard icon={<PersonStanding className="h-6 w-6 text-primary"/>} label="Height" value={`${onboardingData.height}`} unit="cm" dataKey="height" onUpdate={handleDataUpdate} />
                     )}
                     {onboardingData?.weight && (
-                        <StatCard icon={<Weight className="h-6 w-6 text-primary"/>} label="Weight" value={`${onboardingData.weight} kg`} />
+                        <StatCard icon={<Weight className="h-6 w-6 text-primary"/>} label="Weight" value={`${onboardingData.weight}`} unit="kg" dataKey="weight" onUpdate={handleDataUpdate} />
                     )}
                      {onboardingData?.bmi && (
-                        <StatCard icon={<Heart className="h-6 w-6 text-primary"/>} label="BMI" value={onboardingData.bmi} />
+                        <StatDisplayCard icon={<Heart className="h-6 w-6 text-primary"/>} label="BMI" value={onboardingData.bmi} />
                     )}
                 </CardContent>
             </Card>
@@ -166,7 +191,7 @@ export default function ProfilePage() {
   );
 }
 
-const StatCard = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | number }) => (
+const StatDisplayCard = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string | number }) => (
     <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary">
         {icon}
         <div>
@@ -175,3 +200,73 @@ const StatCard = ({ icon, label, value }: { icon: React.ReactNode, label: string
         </div>
     </div>
 )
+
+interface StatCardProps {
+    icon: React.ReactNode;
+    label: string;
+    value: string | number;
+    unit?: string;
+    dataKey: keyof OnboardingData;
+    onUpdate: (key: keyof OnboardingData, value: any) => void;
+}
+
+const StatCard = ({ icon, label, value, unit, dataKey, onUpdate }: StatCardProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const form = useForm<{ value: number }>({
+        resolver: zodResolver(updateSchema),
+        defaultValues: { value: Number(value) },
+    });
+
+    const onSubmit = (data: { value: number }) => {
+        onUpdate(dataKey, data.value);
+        setIsOpen(false);
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                <div className="flex items-center gap-4 p-4 rounded-lg bg-secondary hover:bg-secondary/80 cursor-pointer transition-colors">
+                    {icon}
+                    <div>
+                        <p className="text-sm text-muted-foreground">{label}</p>
+                        <p className="text-xl font-bold">{value} {unit}</p>
+                    </div>
+                </div>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Update {label}</DialogTitle>
+                    <DialogDescription>
+                        Enter your new {label.toLowerCase()}. This will update your profile and help in adjusting future plans.
+                    </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                        <FormField
+                            control={form.control}
+                            name="value"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="sr-only">{label}</FormLabel>
+                                    <FormControl>
+                                        <div className="relative">
+                                            <Input type="number" {...field} />
+                                            {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">{unit}</span>}
+                                        </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="secondary">Cancel</Button>
+                            </DialogClose>
+                            <Button type="submit">Save Changes</Button>
+                        </DialogFooter>
+                    </form>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
+};
