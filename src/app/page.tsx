@@ -89,13 +89,16 @@ export default function Home() {
                 </motion.div>
                 <motion.div
                     variants={FADE_IN_ANIMATION_SETTINGS}
-                    className="flex flex-col gap-2 min-[400px]:flex-row"
+                    className="flex flex-col gap-4 min-[400px]:flex-row"
                 >
-                  <Button size="lg" asChild>
-                    <Link href={getStartedLink}>
-                      Generate Your Free Plan
-                    </Link>
-                  </Button>
+                  <div className='flex flex-col gap-2'>
+                    <p className='text-sm text-muted-foreground'>Ready to take the next step? Get your personalized plan in minutes.</p>
+                    <Button size="lg" asChild>
+                      <Link href={getStartedLink}>
+                        Generate Your Free Plan
+                      </Link>
+                    </Button>
+                  </div>
                 </motion.div>
               </div>
               {heroImage && (
