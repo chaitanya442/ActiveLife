@@ -81,6 +81,7 @@ export default function PlanPage() {
   }
 
   if (plans.length > 0 && activeTab) {
+    const activePlan = plans.find(plan => plan.id === activeTab);
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
@@ -98,15 +99,15 @@ export default function PlanPage() {
               </TabsTrigger>
             ))}
           </TabsList>
-          {plans.map((plan) => (
-             <TabsContent key={plan.id} value={plan.id}>
+          {activePlan && (
+             <TabsContent key={activePlan.id} value={activePlan.id} forceMount>
                  <ExercisePlanComponent
-                    key={plan.id}
-                    storedPlan={plan}
-                    onDelete={() => handlePlanDeleted(plan.id)}
+                    key={activePlan.id}
+                    storedPlan={activePlan}
+                    onDelete={() => handlePlanDeleted(activePlan.id)}
                 />
              </TabsContent>
-          ))}
+          )}
         </Tabs>
       </div>
     );
