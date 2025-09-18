@@ -132,25 +132,29 @@ export function OnboardingForm() {
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    
+
+    const getPdfDataUri = (file: File): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (e.target?.result) {
+                    resolve(e.target.result as string);
+                } else {
+                    reject(new Error("Failed to read file."));
+                }
+            };
+            reader.onerror = (error) => reject(error);
+            reader.readAsDataURL(file);
+        });
+    };
+
     try {
         let pdfDataUri: string | undefined;
         const file = values.medicalHistory?.[0];
-        
+
         if (file) {
             try {
-                pdfDataUri = await new Promise<string>((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        if (e.target?.result) {
-                            resolve(e.target.result as string);
-                        } else {
-                            reject(new Error("Failed to read file."));
-                        }
-                    };
-                    reader.onerror = (error) => reject(error);
-                    reader.readAsDataURL(file);
-                });
+                pdfDataUri = await getPdfDataUri(file);
             } catch (error) {
                 toast({
                     variant: "destructive",
@@ -352,3 +356,5 @@ export function OnboardingForm() {
     </Card>
   );
 }
+
+    
