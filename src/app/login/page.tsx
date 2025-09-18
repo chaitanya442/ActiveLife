@@ -103,6 +103,13 @@ export default function LoginPage() {
       setIsSubmitting(false);
     }
   };
+  
+  const textAnimation = {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 },
+    transition: { duration: 0.3 }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-secondary">
@@ -111,13 +118,17 @@ export default function LoginPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="w-full max-w-sm mx-auto">
+        <Card className="w-full max-w-sm mx-auto overflow-hidden">
           <CardHeader className="text-center">
             <Logo className="justify-center mb-4"/>
-            <CardTitle className="text-2xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
-            <CardDescription>
-              {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
-            </CardDescription>
+              <AnimatePresence mode="wait">
+                  <motion.div key={isSignUp ? 'signup-title' : 'login-title'} {...textAnimation}>
+                      <CardTitle className="text-2xl font-headline">{isSignUp ? "Create an Account" : "Welcome Back"}</CardTitle>
+                      <CardDescription>
+                          {isSignUp ? "Enter your details to get started." : "Sign in to access your personalized fitness plan."}
+                      </CardDescription>
+                  </motion.div>
+              </AnimatePresence>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -149,7 +160,18 @@ export default function LoginPage() {
                   )}
                 />
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                          key={isSignUp ? 'signup-btn' : 'login-btn'}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-center justify-center"
+                      >
+                          {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
+                      </motion.span>
+                    </AnimatePresence>
                 </Button>
               </form>
             </Form>
@@ -171,7 +193,15 @@ export default function LoginPage() {
             </Button>
 
             <p className="mt-4 px-8 text-center text-sm text-muted-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              <AnimatePresence mode="wait">
+                  <motion.span
+                      key={isSignUp ? 'signup-text' : 'login-text'}
+                      {...textAnimation}
+                  >
+                      {isSignUp ? "Already have an account?" : "Don't have an account?"}
+                  </motion.span>
+              </AnimatePresence>
+              {" "}
               <button
                 onClick={() => {
                   setIsSignUp(!isSignUp);
@@ -179,7 +209,15 @@ export default function LoginPage() {
                 }}
                 className="underline underline-offset-4 hover:text-primary"
               >
-                {isSignUp ? "Sign In" : "Sign Up"}
+                  <AnimatePresence mode="wait">
+                      <motion.span
+                          key={isSignUp ? 'signin-link' : 'signup-link'}
+                          {...textAnimation}
+                          className="inline-block"
+                      >
+                          {isSignUp ? "Sign In" : "Sign Up"}
+                      </motion.span>
+                  </AnimatePresence>
               </button>
             </p>
           </CardContent>
