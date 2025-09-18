@@ -1,8 +1,18 @@
+
 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Dumbbell, HeartPulse, BrainCircuit } from 'lucide-react';
+import {
+  ArrowRight,
+  Dumbbell,
+  HeartPulse,
+  BrainCircuit,
+  CheckCircle2,
+  Telescope,
+  Activity,
+  ShieldAlert,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { placeholderImages } from '@/lib/placeholder-images';
@@ -92,7 +102,7 @@ export default function Home() {
                     className="flex flex-col gap-4 min-[400px]:flex-row"
                 >
                   <div className='flex flex-col gap-2'>
-                    <p className='text-sm text-muted-foreground'>Stop following generic workout routines. ActiveLife&apos;s AI analyzes your unique data to build a safe and effective plan that&apos;s tailored just for you.</p>
+                    <p className='text-sm text-muted-foreground'>Stop following generic workout routines. ActiveLife's AI analyzes your unique data to build a safe and effective plan that's tailored just for you.</p>
                     <Button size="lg" asChild>
                       <Link href={getStartedLink}>
                         Generate Your Free Plan
@@ -117,44 +127,42 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-card">
+        <section className="w-full py-12 md:py-24 lg:py-32">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm">
-                  Key Features
+                  The ActiveLife System
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                  A Smarter Way to Get Fit
+                  Personalized Exercise Prescription
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  Leverage the power of AI to build a fitness routine that's
-                  safe, effective, and perfectly tailored to you.
+                  Our core mission is to build a tool that generates tailored workout programs based on medical history, ensuring a safe and effective fitness journey for every user.
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-3 lg:max-w-none mt-12">
-              <div>
+            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:grid-cols-2 lg:max-w-none mt-12">
                 <FeatureCard
-                  icon={<HeartPulse className="h-8 w-8 text-primary" />}
-                  title="Individual Risk Analysis"
-                  description="Upload your medical history to allow our AI to perform a risk stratification, ensuring every exercise is safe for you."
+                  icon={<Telescope className="h-8 w-8 text-primary" />}
+                  title="Risk Stratification"
+                  description="We use a combination of rules and machine learning models to analyze your medical history and assess potential risks, ensuring your plan is safe."
                 />
-              </div>
-              <div>
+                <FeatureCard
+                  icon={<Activity className="h-8 w-8 text-primary" />}
+                  title="Dynamic Adjustments"
+                  description="Your plan isn't static. It evolves with you. We dynamically adjust intensity and duration based on your feedback and progress."
+                />
                 <FeatureCard
                   icon={<BrainCircuit className="h-8 w-8 text-primary" />}
-                  title="Personalized Plans"
-                  description="Answer a few questions and get a complete, AI-generated exercise plan based on your goals and fitness level."
+                  title="Performance Monitoring"
+                  description="Integrate with your favorite wearables to automatically track performance, giving our AI the data it needs to optimize your routine."
                 />
-              </div>
-              <div>
                 <FeatureCard
-                  icon={<Dumbbell className="h-8 w-8 text-primary" />}
-                  title="Dynamic Adjustments"
-                  description="Your plan evolves with you. Provide feedback and our AI will dynamically adjust intensity and duration to keep you challenged."
+                  icon={<ShieldAlert className="h-8 w-8 text-primary" />}
+                  title="Progress Tracking & Safety Alerts"
+                  description="Stay motivated with clear progress visualizations and receive timely alerts if any activity might conflict with your health profile."
                 />
-              </div>
             </div>
           </div>
         </section>
