@@ -92,7 +92,7 @@ export default function Home() {
                     className="flex flex-col gap-4 min-[400px]:flex-row"
                 >
                   <div className='flex flex-col gap-2'>
-                    <p className='text-sm text-muted-foreground'>Ready to take the next step? Get your personalized plan in minutes.</p>
+                    <p className='text-sm text-muted-foreground'>Stop following generic workout routines. ActiveLife&apos;s AI analyzes your unique data to build a safe and effective plan that&apos;s tailored just for you.</p>
                     <Button size="lg" asChild>
                       <Link href={getStartedLink}>
                         Generate Your Free Plan
