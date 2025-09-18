@@ -48,7 +48,7 @@ const extractHighlightsPrompt = ai.definePrompt({
   output: { schema: ExtractHighlightsOutputSchema },
   prompt: `You are a medical assistant. Your task is to analyze the provided medical document and extract the most critical highlights and specific patient data.
 
-  Attached Medical Document: {{{media url=medicalPdf}}}
+  Attached Medical Document: {{media url=medicalPdf}}
 
   Instructions:
   1.  **Extract Specific Data**: Carefully read the document and identify the following patient data points: age, sex, height (in cm), and weight (in kg). If a value is present, populate the corresponding field in the output. If not, leave it empty.
@@ -70,4 +70,3 @@ const extractHighlightsFlow = ai.defineFlow(
     return output!;
   }
 );
-
