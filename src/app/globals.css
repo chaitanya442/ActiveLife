@@ -90,7 +90,7 @@
       hsl(var(--background)),
       hsl(var(--secondary)),
       hsl(var(--background)),
-      hsl(var(--accent) / 0.2)
+      hsl(var(--accent) / 0.1)
     );
     background-size: 400% 400%;
     animation: gradient-bg 15s ease infinite;
