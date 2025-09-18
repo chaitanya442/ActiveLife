@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,11 +47,6 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
-  useEffect(() => {
-    if (!loading && user) {
-      router.push("/dashboard");
-    }
-  }, [user, loading, router]);
 
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
@@ -59,7 +54,7 @@ export default function LoginPage() {
     try {
       await signInWithPopup(auth, googleProvider);
       toast({ title: "Success!", description: "You've been signed in." });
-      // The useEffect hook will handle the redirect
+      router.push("/dashboard");
     } catch (error: any) {
       console.error("Authentication error:", error);
       toast({
@@ -78,7 +73,7 @@ export default function LoginPage() {
     try {
       await signInAnonymously(auth);
       toast({ title: "Welcome, Guest!", description: "You're signed in anonymously." });
-      // The useEffect hook will handle the redirect
+      router.push("/dashboard");
     } catch (error: any) {
       console.error("Anonymous sign-in error:", error);
       toast({
@@ -104,7 +99,7 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Signed In!", description: "Welcome back." });
       }
-       // The useEffect hook will handle the redirect
+      router.push("/dashboard");
     } catch (error: any) {
       console.error("Authentication error:", error);
       let description = "An unexpected error occurred.";
@@ -258,3 +253,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
+    
