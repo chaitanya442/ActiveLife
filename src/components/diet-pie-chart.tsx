@@ -39,7 +39,7 @@ export function DietPieChart({ macros }: DietPieChartProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-            <Apple className="text-accent" />
+            <Apple className="text-primary" />
             Diet Breakdown
         </CardTitle>
         <CardDescription>Recommended daily macronutrient distribution.</CardDescription>
