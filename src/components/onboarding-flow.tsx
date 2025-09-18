@@ -90,7 +90,7 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
 
   const step2Form = useForm<Step2Data>({
     resolver: zodResolver(step2Schema),
-    defaultValues: { age: '' as any, height: '' as any, weight: '' as any, medicalHistory: '' },
+    defaultValues: { age: '' as any, sex: undefined, height: '' as any, weight: '' as any, medicalHistory: '', medicalPdf: '' },
   });
 
   const onNextStep = () => setStep(2);
@@ -99,7 +99,9 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
     const file = event.target.files?.[0];
     setHighlights(null);
     setFileName(null);
-    step2Form.reset();
+    step2Form.setValue('medicalPdf', '');
+    step2Form.clearErrors();
+
 
     if (file) {
       if (file.type !== 'application/pdf') {
