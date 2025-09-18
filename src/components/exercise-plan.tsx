@@ -13,18 +13,31 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { getAdjustedPlan } from "@/app/actions/user-data";
-import { Loader2, ShieldAlert, Wand2, Apple, Dumbbell } from "lucide-react";
+import { Loader2, ShieldAlert, Wand2, Apple, Dumbbell, Trash2, AlertTriangle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 interface ExercisePlanProps {
   initialPlan: ExercisePlanType;
   fitnessGoals: string;
+  onDelete: () => void;
 }
 
 const parseSection = (planText: string | undefined) => {
@@ -54,7 +67,7 @@ const adjustmentFormSchema = z.object({
   userFeedback: z.string().min(10, "Please provide detailed feedback so we can make a better plan for you."),
 });
 
-export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
+export function ExercisePlan({ initialPlan, fitnessGoals, onDelete }: ExercisePlanProps) {
   const [plan, setPlan] = useState<ExercisePlanType>(initialPlan);
   const [isAdjusting, setIsAdjusting] = useState(false);
   const { toast } = useToast();
@@ -212,6 +225,40 @@ export function ExercisePlan({ initialPlan, fitnessGoals }: ExercisePlanProps) {
             </form>
           </Form>
         </CardContent>
+      </Card>
+
+      <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+                <AlertTriangle />
+                Danger Zone
+            </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <CardDescription className="mb-4">
+                    If you want to start over with a completely new set of goals or personal data, you can delete your current plan. This action cannot be undone.
+                </CardDescription>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete and Create New Plan
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action will permanently delete your current exercise and diet plan. You will be taken back to the beginning to generate a new one.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={onDelete}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </CardContent>
       </Card>
     </div>
   );

@@ -37,6 +37,13 @@ export default function PlanPage() {
     sessionStorage.setItem("onboardingData", JSON.stringify(newOnboardingData));
   };
 
+  const handlePlanDeleted = () => {
+    setPlanData(null);
+    setOnboardingData(null);
+    sessionStorage.removeItem("generatedPlan");
+    sessionStorage.removeItem("onboardingData");
+  };
+
 
   if (loading) {
     return (
@@ -52,6 +59,7 @@ export default function PlanPage() {
         <ExercisePlanComponent 
           initialPlan={planData} 
           fitnessGoals={onboardingData.fitnessGoals ?? ""}
+          onDelete={handlePlanDeleted}
         />
       </div>
     );
