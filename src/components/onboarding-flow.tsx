@@ -120,21 +120,6 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
       setFileName(file.name);
       setIsHighlighting(true);
       
-      const processPdfResult = (resultData: ExtractHighlightsOutput) => {
-        if (resultData.highlights) {
-          setHighlights(resultData.highlights);
-        }
-        setPlaceholders({
-            age: resultData.age,
-            height: resultData.height,
-            weight: resultData.weight,
-        });
-
-        if (resultData.sex) {
-          step2Form.setValue('sex', resultData.sex);
-        }
-      };
-
       const reader = new FileReader();
       reader.onloadend = async () => {
         const dataUri = reader.result as string;
@@ -142,6 +127,21 @@ export function OnboardingFlow({ onPlanGenerated, onCancel }: OnboardingFlowProp
         
         const pdfHash = simpleHash(dataUri);
         const cachedResult = sessionStorage.getItem(pdfHash);
+
+        const processPdfResult = (resultData: ExtractHighlightsOutput) => {
+            if (resultData.highlights) {
+                setHighlights(resultData.highlights);
+            }
+            const newPlaceholders: Partial<ExtractHighlightsOutput> = {};
+            if (resultData.age) newPlaceholders.age = resultData.age;
+            if (resultData.height) newPlaceholders.height = resultData.height;
+            if (resultData.weight) newPlaceholders.weight = resultData.weight;
+            setPlaceholders(newPlaceholders);
+
+            if (resultData.sex) {
+              step2Form.setValue('sex', resultData.sex);
+            }
+        };
 
         if (cachedResult) {
             console.log("Using cached PDF analysis result.");
