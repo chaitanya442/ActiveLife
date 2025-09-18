@@ -18,10 +18,10 @@ import {
 } from "@/ai/flows/extract-highlights-from-pdf";
 
 const PlanCreationSchema = z.object({
-  age: z.number(),
+  age: z.coerce.number().min(16, "You must be at least 16 years old.").max(100),
   sex: z.enum(["male", "female", "other"]),
-  height: z.number(),
-  weight: z.number(),
+  height: z.coerce.number().min(100, "Height must be in cm.").max(250),
+  weight: z.coerce.number().min(30, "Weight must be in kg.").max(300),
   medicalHistory: z.string().optional(),
   medicalPdf: z.string().optional(),
   fitnessGoals: z.string().min(10, "Please provide more detailed goals."),
