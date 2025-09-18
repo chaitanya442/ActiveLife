@@ -132,68 +132,69 @@ export function OnboardingForm() {
 
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
-    let pdfDataUri: string | undefined;
-
-    const file = values.medicalHistory?.[0];
-    if (file) {
-      try {
-        pdfDataUri = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            if (e.target?.result) {
-              resolve(e.target.result as string);
-            } else {
-              reject(new Error("Failed to read file."));
-            }
-          };
-          reader.onerror = (error) => reject(error);
-          reader.readAsDataURL(file);
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "File Read Error",
-          description: error instanceof Error ? error.message : "Could not process the uploaded file.",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-    }
-
-    const onboardingDataForStorage = {
-      age: values.age,
-      sex: values.sex,
-      height: values.height,
-      weight: values.weight,
-      fitnessGoals: values.fitnessGoals,
-    };
-
+    
     try {
-      const result = await generatePlan({
-        ...values,
-        medicalHistory: undefined,
-        pdfDataUri,
-      });
+        let pdfDataUri: string | undefined;
+        const file = values.medicalHistory?.[0];
+        
+        if (file) {
+            try {
+                pdfDataUri = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        if (e.target?.result) {
+                            resolve(e.target.result as string);
+                        } else {
+                            reject(new Error("Failed to read file."));
+                        }
+                    };
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsDataURL(file);
+                });
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "File Read Error",
+                    description: error instanceof Error ? error.message : "Could not process the uploaded file.",
+                });
+                setIsSubmitting(false);
+                return;
+            }
+        }
 
-      if (result.success) {
-        toast({
-          title: "Plan Generated!",
-          description: "Redirecting you to your new plan...",
+        const onboardingDataForStorage = {
+            age: values.age,
+            sex: values.sex,
+            height: values.height,
+            weight: values.weight,
+            fitnessGoals: values.fitnessGoals,
+        };
+
+        const result = await generatePlan({
+            ...values,
+            medicalHistory: undefined,
+            pdfDataUri,
         });
-        sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
-        sessionStorage.setItem("onboardingData", JSON.stringify(onboardingDataForStorage));
-        router.push("/plan");
-      } else {
-        throw new Error(result.error || "There was a problem generating your plan.");
-      }
+
+        if (result.success) {
+            toast({
+                title: "Plan Generated!",
+                description: "Redirecting you to your new plan...",
+            });
+            sessionStorage.setItem("generatedPlan", JSON.stringify(result.data));
+            sessionStorage.setItem("onboardingData", JSON.stringify(onboardingDataForStorage));
+            router.push("/plan");
+        } else {
+            throw new Error(result.error || "There was a problem generating your plan.");
+        }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: error instanceof Error ? error.message : "An unexpected error occurred.",
-      });
+        toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: error instanceof Error ? error.message : "An unexpected error occurred.",
+        });
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
   };
 
