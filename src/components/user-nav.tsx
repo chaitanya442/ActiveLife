@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -14,7 +15,7 @@ import {
 import { useAuth } from "@/components/providers/auth-provider";
 import { getAuth, signOut } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { LogOut, User as UserIcon } from "lucide-react";
+import { LogOut, User as UserIcon, UserPlus } from "lucide-react";
 
 export function UserNav() {
   const { user } = useAuth();
@@ -26,12 +27,19 @@ export function UserNav() {
     router.push("/login");
   };
 
+  const handleSignUp = () => {
+    // Clear session storage so the user is prompted to create a new plan
+    sessionStorage.removeItem("generatedPlan");
+    sessionStorage.removeItem("onboardingData");
+    router.push("/login");
+  }
+
   if (!user) {
     return null;
   }
 
   const getInitials = (name: string | null | undefined) => {
-    if (!name) return "A";
+    if (!name) return "G"; // Guest
     const names = name.split(" ");
     if (names.length > 1) {
       return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
@@ -53,19 +61,26 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
-              {user.displayName}
+              {user.isAnonymous ? "Guest User" : user.displayName || "User"}
             </p>
-            <p className="text-xs leading-none text-muted-foreground">
+            {user.email && <p className="text-xs leading-none text-muted-foreground">
               {user.email}
-            </p>
+            </p>}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem disabled>
-            <UserIcon className="mr-2 h-4 w-4" />
-            <span>Profile</span>
-          </DropdownMenuItem>
+          {user.isAnonymous ? (
+            <DropdownMenuItem onClick={handleSignUp}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              <span>Sign Up</span>
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem disabled>
+              <UserIcon className="mr-2 h-4 w-4" />
+              <span>Profile</span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>

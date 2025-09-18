@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, getRedirectResult } from "firebase/auth";
+import { getAuth, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, getRedirectResult, signInAnonymously } from "firebase/auth";
 import { googleProvider } from "@/lib/firebase";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { placeholderImages } from "@/lib/placeholder-images";
 import Logo from "@/components/logo";
@@ -89,6 +89,25 @@ export default function LoginPage() {
           description: "Could not sign in with Google. Please try again.",
         });
       }
+    }
+  };
+
+  const handleGuestSignIn = async () => {
+    setIsSubmitting(true);
+    const auth = getAuth();
+    try {
+      await signInAnonymously(auth);
+      toast({ title: "Welcome, Guest!", description: "You're signed in anonymously." });
+      router.push("/dashboard");
+    } catch (error: any) {
+      console.error("Anonymous sign-in error:", error);
+      toast({
+        variant: "destructive",
+        title: "Guest Sign-in Failed",
+        description: "Could not sign in as a guest. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -206,14 +225,29 @@ export default function LoginPage() {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
-              </Button>
-              <Button variant="outline" className="w-full" onClick={handleGoogleSignIn}>
-                <GoogleIcon />
-                 {isSignUp ? "Sign up with Google" : "Login with Google"}
+                {isSubmitting && !form.formState.isSubmitting ? <Loader2 className="animate-spin" /> : (isSignUp ? "Sign Up" : "Login")}
               </Button>
             </form>
           </Form>
+           <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+                </span>
+            </div>
+          </div>
+          <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isSubmitting}>
+            <GoogleIcon />
+              {isSignUp ? "Sign up with Google" : "Login with Google"}
+          </Button>
+          <Button variant="outline" className="w-full" onClick={handleGuestSignIn} disabled={isSubmitting}>
+             <User className="mr-2 h-4 w-4" />
+             Continue as Guest
+          </Button>
+
           <div className="mt-4 text-center text-sm">
             {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
             <button onClick={() => {
