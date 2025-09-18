@@ -27,13 +27,29 @@ const PlanCreationSchema = z.object({
   fitnessGoals: z.string().min(10, "Please provide more detailed goals."),
 });
 
+const DailyExerciseSchema = z.object({
+  day: z.string(),
+  focus: z.string(),
+  exercises: z.array(z.object({
+    name: z.string(),
+    sets: z.string(),
+    reps: z.string(),
+  })),
+});
+
 const AdjustmentSchema = z.object({
-  workoutPlan: z.string(),
+  exercisePlan: z.array(DailyExerciseSchema),
   dietPlan: z.string(),
+  macros: z.object({
+    carbs: z.number(),
+    protein: z.number(),
+    fat: z.number(),
+  }),
   userFeedback: z.string().min(10, "Please provide more detailed feedback."),
-  performanceData: z.string(),
+  performanceData: z.string().optional(),
   fitnessGoals: z.string(),
 });
+
 
 const HighlightsSchema = z.object({
   medicalPdf: z.string(),
@@ -54,13 +70,20 @@ export async function getAdjustedPlan(data: AdjustmentData) {
     return {
       success: true,
       data: {
-        exercisePlan: result.adjustedWorkoutPlan,
+        exercisePlan: result.adjustedExercisePlan,
         dietPlan: result.adjustedDietPlan,
+        macros: result.adjustedMacros,
         safetyAdvice: result.explanation,
       },
     };
   } catch (error) {
     console.error("Error adjusting plan:", error);
+    if (error instanceof Error && error.message.includes("The model is not configured to output medias of type")) {
+        return {
+            success: false,
+            error: "The AI model could not generate the plan in the required format. Please try modifying your feedback or try again.",
+        };
+    }
     const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
     return {
       success: false,

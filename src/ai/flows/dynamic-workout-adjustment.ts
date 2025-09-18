@@ -17,50 +17,79 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
+const DailyExerciseSchema = z.object({
+  day: z.string().describe('Day of the week (e.g., Monday, Tuesday).'),
+  focus: z.string().describe('The main focus for the day (e.g., Chest & Triceps, Legs, Rest).'),
+  exercises: z.array(z.object({
+    name: z.string().describe('Name of the exercise.'),
+    sets: z.string().describe('Number of sets (e.g., 3, 4).'),
+    reps: z.string().describe('Number of repetitions per set (e.g., 8-12, 15).'),
+  })).describe('A list of exercises for the day.'),
+});
+
+
 // Define the input schema for the adjustWorkoutPlan function
 const AdjustWorkoutPlanInputSchema = z.object({
-  workoutPlan: z.string().describe('The current workout plan in a string format.'),
-  dietPlan: z.string().describe('The current diet plan in a string format.'),
+  exercisePlan: z.array(DailyExerciseSchema).describe('The current structured workout plan.'),
+  dietPlan: z.string().describe('The current diet plan text.'),
+  macros: z.object({
+    carbs: z.number(),
+    protein: z.number(),
+    fat: z.number(),
+  }).describe('The current macronutrient breakdown.'),
   userFeedback: z.string().describe('User feedback on the workout and diet plan (e.g., too easy, too hard, time constraints, food preferences).'),
   performanceData: z.string().describe('Data on user performance (e.g., exercises completed, sets, reps, weight used).'),
   fitnessGoals: z.string().describe('User defined fitness goals.'),
 });
 export type AdjustWorkoutPlanInput = z.infer<typeof AdjustWorkoutPlanInputSchema>;
 
-// Define the output schema for the adjustWorkoutPlan function
+
 const AdjustWorkoutPlanOutputSchema = z.object({
-  adjustedWorkoutPlan: z.string().describe('The adjusted workout plan based on user feedback and performance data.'),
-  adjustedDietPlan: z.string().describe('The adjusted diet plan based on user feedback and preferences.'),
-  explanation: z.string().describe('Explanation of the adjustments made to both the workout and diet plans.'),
+    adjustedExercisePlan: z.array(DailyExerciseSchema).describe("The adjusted, day-by-day exercise plan for one week."),
+    adjustedDietPlan: z.string().describe("The adjusted general overview of the diet plan."),
+    adjustedMacros: z.object({
+        carbs: z.number().describe("The adjusted percentage of daily calories from carbohydrates."),
+        protein: z.number().describe("The adjusted percentage of daily calories from protein."),
+        fat: z.number().describe("The adjusted percentage of daily calories from fat."),
+    }).describe("The adjusted macronutrient breakdown."),
+    explanation: z.string().describe('Explanation of the adjustments made to both the workout and diet plans.'),
 });
 export type AdjustWorkoutPlanOutput = z.infer<typeof AdjustWorkoutPlanOutputSchema>;
+
 
 // Define the adjustWorkoutPlan function
 export async function adjustWorkoutPlan(input: AdjustWorkoutPlanInput): Promise<AdjustWorkoutPlanOutput> {
   return adjustWorkoutPlanFlow(input);
 }
 
+
 // Define the prompt for workout plan adjustment
 const adjustWorkoutPlanPrompt = ai.definePrompt({
   name: 'adjustWorkoutPlanPrompt',
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: AdjustWorkoutPlanInputSchema},
   output: {schema: AdjustWorkoutPlanOutputSchema},
   prompt: `You are a personal trainer and nutritionist who adjusts workout and diet plans based on user feedback and performance.
 
-  Current Workout Plan: {{{workoutPlan}}}
+  Current Exercise Plan:
+  \`\`\`json
+  {{{jsonStringify exercisePlan}}}
+  \`\`\`
   Current Diet Plan: {{{dietPlan}}}
+  Current Macros: Carbs: {{{macros.carbs}}}%, Protein: {{{macros.protein}}}%, Fat: {{{macros.fat}}}%
+  
   User Feedback: {{{userFeedback}}}
   Performance Data: {{{performanceData}}}
   Fitness Goals: {{{fitnessGoals}}}
 
-  Based on the user feedback, performance data, and fitness goals, adjust both the workout and diet plans.
-  - For the workout plan, consider intensity, volume, exercise selection, and rest periods.
+  Based on the user feedback, performance data, and fitness goals, adjust the exercise plan, diet plan, and macronutrient breakdown.
+  - For the exercise plan, consider intensity, volume, exercise selection, and rest periods. Return a full 7-day structured plan.
   - For the diet plan, consider caloric intake, macronutrient distribution, and food preferences mentioned in the feedback.
+  - For the macros, ensure the new percentages add up to 100.
 
   Ensure that the adjusted plans are safe, effective, and still aligned with the user's primary fitness goals.
 
-  Return the adjusted workout plan, the adjusted diet plan, and a clear explanation of the changes you made to accommodate the user's feedback.
+  Return the adjusted structured exercise plan, the adjusted diet plan text, the adjusted macros, and a clear explanation of the changes you made.
   `, 
 });
 
